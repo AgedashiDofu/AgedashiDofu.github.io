@@ -1,1 +1,0 @@
-window.__SKYWAY_KEY__ = 'e4028e88-11db-4856-a202-b03c0892f790';
