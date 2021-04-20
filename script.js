@@ -1,4 +1,4 @@
-
+const Peer = window.Peer;
 
 (async function main() {
   const localVideo = document.getElementById('js-local-stream');
@@ -40,8 +40,8 @@
   await localVideo.play().catch(console.error);
 
   // eslint-disable-next-line require-atomic-updates
-  const peer = new Peer({
-    key: 'e4028e88-11db-4856-a202-b03c0892f790',
+  const peer = (window.peer = new Peer({
+    key: window.__SKYWAY_KEY__,
     debug: 3,
   }));
 
