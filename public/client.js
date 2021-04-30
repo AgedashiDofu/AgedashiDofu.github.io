@@ -10,7 +10,7 @@ const ERR_MSG = [
 	"[E-01] 名前を入力してから入ってな。",					// E_NO_USERNAME
 	"[E-02] あれ？白紙やん。何か書いてから山札に置こか。"	// E_BLANK_CARD
 ];
-var socket = io('http://localhost:1337');
+var socket = io();
 var myPlace = AT_ENTRANCE;
 
 // ==== 0.共通 ====
