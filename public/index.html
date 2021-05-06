@@ -7,12 +7,13 @@
 	<link href="/style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-	<div id="styleA">
+	<div id="styleTitleAndList">
 		<img src="/title.png">
-		<div id="viewCardMaking1" style="display:none">
+		<div id="viewPlayersTable" style="display:none">
 			<div id="tablePlayers"></div>
+			</br>
 		</div>
-		<div id="viewEntrance1">
+		<div id="viewEntrance">
 			<table border="2" rules="none" cellpadding="6">
 				<tr>
 					<td>ルーム内：</td>
@@ -25,19 +26,39 @@
 			</br></br>
 			プレイヤー名</br>
 			<input type="text" id="inputPlayerName"></input>
-			<button id="login" onClick="btnLogin()" disabled>入る</button>
+			<button id="idBtnLogin" onClick="btnLogin()" disabled>入る</button>
 		</div>
 	</div>
 	
-	<div id="styleB">
-		<div id="viewCardMaking2" style="display:none">
-			<table border="2" rules="none" cellpadding="6">
-				<tr >
-					<td colspan="3" bgcolor="mediumseagreen">
-						ルール設定
+	<div id="styleTurn">
+		<div id="viewTurn" style="display:none">
+			</br></br></br>
+			<table rules="none" cellpadding="3" style="background-color:#00b300;">
+				<tr>
+					<td>ターン：</td>
+					<td>
+						<div id="textTurn" style="color:red; font-size:20pt;"></div>
 					</td>
 				</tr>
 				<tr>
+					<td colspan="2" align="center">
+						　<button id="idBtnNextTurn" onClick="btnNextTurn()">次のターンへ</button>　
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+	<div id="styleRuleSetting">
+		<div id="viewRuleSetting" style="display:none">
+			</br>
+			<table border="2" rules="none" cellpadding="6">
+				<tr >
+					<td colspan="3" bgcolor="darkgreen" style="color:white">
+						ルール設定
+					</td>
+				</tr>
+				<tr bgcolor="#00b300">
 					<td>手札の数　</td>
 					<td>
 						<select id="selectHandleCards">
@@ -48,10 +69,10 @@
 						</select>
 					</td>
 					<td>
-						<button id="changeHandlings" onClick="btnChangeRuleHandlings()">変更</button>
+						<button id="idBtnChangeHandlings" onClick="btnChangeRuleHandlings()">変更</button>
 					</td>
 				</tr>
-				<tr>
+				<tr bgcolor="#00b300">
 					<td>場の数</td>
 					<td>
 						<select id="selectFields">
@@ -60,7 +81,7 @@
 						</select>　
 					</td>
 					<td>
-						<button id="changeFields" onClick="btnChangeRuleFields()">変更</button>
+						<button id="idBtnChangeFields" onClick="btnChangeRuleFields()">変更</button>
 					</td>
 				</tr>
 			</table>
@@ -68,9 +89,25 @@
 		</div>
 	</div>
 
-	<div id="styleC">
-		<div id="viewEntrance2">
-			</br></br></br></br></br>
+	<div id="styleInputTheme">
+		<div id="viewInputTheme" style="display:none">
+			<table rules="none" cellpadding="5" style="background-color:khaki;">
+				<tr>
+					<td>
+						<input type="text" id="inputTheme" size="48"></input>
+					</td>
+					<td>
+						<button id="idBtnInputTheme" onClick="btnInputTheme()">お題入力</button>
+					</td>
+				</tr>
+			</table>
+			</br>
+		</div>
+	</div>
+
+	<div id="styleMain">
+		<div id="viewCaution">
+			</br></br>
 			<div style="color:dodgerblue; font-size:8pt;">
 				【注意事項】</br>
 				　<img src="/check_mark.png">最大7人までログインできるで</br>
@@ -80,8 +117,7 @@
 				　　・ログイン後、ブラウザの更新ボタン　→　ログアウトして、このページへ戻ってきてまう</br>
 			</div>
 		</div>
-		<div id="viewCardMaking3" style="display:none">
-			</br></br>
+		<div id="viewCardMaking" style="display:none">
 			<div style="background-color:khaki;">
 				<img src="/card_input_time.png">
 				<table border="2" rules="none" cellpadding="6">
@@ -102,10 +138,12 @@
 			</div>
 		</div>
 		<div id="viewGame" style="display:none">
-			ゲーム画面
+			<canvas id="drawCanvas" width="480px" height="540px" style="background-color:darkgreen;"></canvas>
 		</div>
 	</div>
-	
+
+	<script type="text/javascript" src="const.js"></script>
 	<script type="text/javascript" src="client.js"></script>
+	<script type="text/javascript" src="view.js"></script>
 </body>
 </html>

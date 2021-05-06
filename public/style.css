@@ -1,11 +1,18 @@
-#styleA {
+#styleTitleAndList {
    float: left;
-   width: 50%;
+   width: 25%;
 }
-#styleB {
+#styleTurn {
+   float: left;
+   width: 25%;
+}
+#styleRuleSetting {
 	float: right;
 	width: 50%;
 }
-#styleC {
+#styleInputTheme {
+	clear: right;
+}
+#styleMain {
 	clear: both;
 }
