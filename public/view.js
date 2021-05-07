@@ -112,7 +112,7 @@ function preloadImage()
 }
 
 // ゲーム初期画面描画
-function drawGameInit(ruleHandlingCards, ruleFieldCards, num_of_deck)
+function drawGameInit(themeCard, fieldCards, ruleHandlingCards, ruleFieldCards, num_of_deck)
 {
 	var elemCanvas = document.getElementById('drawCanvas');
 
@@ -120,7 +120,7 @@ function drawGameInit(ruleHandlingCards, ruleFieldCards, num_of_deck)
 	var cvs = canvasContext;
 	
 	// 初期画面描画
-	drawInitDisp(cvs, ruleHandlingCards, ruleFieldCards, num_of_deck);
+	drawInitDisp(cvs, themeCard, fieldCards, ruleHandlingCards, ruleFieldCards, num_of_deck);
 	
 	// クリック判定
 	elemCanvas.addEventListener("click", e => {
@@ -233,23 +233,24 @@ function clickCheckDeck(cvs, x, y)
 }
 
 // 初期画面描画
-function drawInitDisp(cvs, ruleHandlingCards, ruleFieldCards, num_of_deck)
+function drawInitDisp(cvs, themeCard, fieldCards, ruleHandlingCards, ruleFieldCards, num_of_deck)
 {
-	let dummyThemeCard = "";
 	let dummyHandlingCards = new Array();
-	let dummyFieldCards = ["", "", ""];
 	
 	// 説明文字描画
 	drawStrings(cvs);
 	
 	// お題描画
-	updateTheme(dummyThemeCard);
+	updateTheme(themeCard);
 	
 	// 全手札描画
 	drawAllHandlingCards(dummyHandlingCards, ruleHandlingCards);
-
+	
 	// 場描画
-	drawAllFields(dummyFieldCards, ruleFieldCards);
+	if (ruleFieldCards == 2) {						// 場2枚ルール
+		changeRulesFields(ruleFieldCards);			// ルール変更処理
+	}
+	drawAllFields(fieldCards, ruleFieldCards);		// 全場描画
 
 	// 山札描画
 	drawDeck(cvs);							// 画像
@@ -559,15 +560,64 @@ function drawCardFieldNone(cvs, target)
 	cvs.fill();
 }
 
-// 場消去
-function clearFields(cvs)
+// ルール変更（場の数）
+function changeRulesFields(ruleFieldCards)
 {
+	var cvs = canvasContext;
+	
+	// 説明文字（上の句/中の句/下の句）消去
 	cvs.beginPath();
+	cvs.fillStyle = "darkgreen";
+	cvs.rect(22, 170, 60, 124);
+	cvs.fill();
+	
+	// ルールにより、場のy方向位置調整
+	if (ruleFieldCards == 3) {			// 場3枚ルール
+		fieldRect[FIELD_UPPER].y  -= FLD2RULE_Y_AJST;		// 上の句
+		fieldRect[FIELD_BOTTOM].y += FLD2RULE_Y_AJST;		// 下の句
+		fieldTextRect[FIELD_UPPER].y  -= FLD2RULE_Y_AJST;	// 上の句
+		fieldTextRect[FIELD_BOTTOM].y += FLD2RULE_Y_AJST;	// 下の句
 
+		// 説明文字描画
+		cvs.beginPath();
+		cvs.lineWidth = 3; cvs.strokeStyle = "black"; cvs.fillStyle = "white";
+		cvs.font = "18px sans-serif";
+		cvs.strokeText("上の句", 25+27, 190);				// 謎の+27
+		cvs.fillText("上の句",   25+27, 190);				// 謎の+27
+
+		cvs.strokeText("中の句", 25+27, 234);				// 謎の+27
+		cvs.fillText("中の句",   25+27, 234);				// 謎の+27
+
+		cvs.strokeText("下の句", 25+27, 278);				// 謎の+27
+		cvs.fillText("下の句",   25+27, 278);				// 謎の+27
+	}
+	else {								// 場2枚ルール
+		fieldRect[FIELD_UPPER].y  += FLD2RULE_Y_AJST;		// 上の句
+		fieldRect[FIELD_BOTTOM].y -= FLD2RULE_Y_AJST;		// 下の句
+		fieldTextRect[FIELD_UPPER].y  += FLD2RULE_Y_AJST;	// 上の句
+		fieldTextRect[FIELD_BOTTOM].y -= FLD2RULE_Y_AJST;	// 下の句
+
+		// 説明文字描画
+		cvs.beginPath();
+		cvs.lineWidth = 3; cvs.strokeStyle = "black"; cvs.fillStyle = "white";
+		cvs.font = "18px sans-serif";
+		cvs.strokeText("上の句", 25+27, 204);				// 謎の+27
+		cvs.fillText("上の句",   25+27, 204);				// 謎の+27
+
+		cvs.strokeText("下の句", 25+27, 264);				// 謎の+27
+		cvs.fillText("下の句",   25+27, 264);				// 謎の+27
+	}
+}
+
+// 場消去
+function clearFields()
+{
+	var cvs = canvasContext;
+	
+	cvs.beginPath();
+	
 	// 矩形描画
 	cvs.fillStyle = "darkgreen";
 	cvs.rect(FLD_X, FLD_Y, FLD_W, (FLD_H * 3) + (FLD_GAP * 2));
 	cvs.fill();
 }
-
-
