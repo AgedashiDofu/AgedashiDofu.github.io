@@ -1,41 +1,41 @@
-// ==== Šeíƒ‚ƒWƒ…[ƒ‹€”õ ====
+// ==== å„ç¨®ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«æº–å‚™ ====
 var express = require('express');
 var http = require( 'http' );
 var socketIO = require('socket.io');
 var fs = require('fs');
 var iconv = require('iconv-lite');
 var readline = require('readline');
-var app = express();		// expressƒAƒvƒŠƒP[ƒVƒ‡ƒ“¶¬
+var app = express();		// expressã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ç”Ÿæˆ
 var server = http.Server( app );
 var io = socketIO( server );
 
-// ŒöŠJƒtƒHƒ‹ƒ_‚Ìw’è
+// å…¬é–‹ãƒ•ã‚©ãƒ«ãƒ€ã®æŒ‡å®š
 app.use( express.static( __dirname + '/public' ) );
 
-// ƒT[ƒo[‚Ì‹N“®
-const PORT_NO = process.env.PORT || 1337;	// ƒ|[ƒg”Ô†iŠÂ‹«•Ï”PORT‚ª‚ ‚ê‚Î‚»‚ê‚ğA–³‚¯‚ê‚Î1337‚ğg‚¤j
+// ã‚µãƒ¼ãƒãƒ¼ã®èµ·å‹•
+const PORT_NO = process.env.PORT || 1337;	// ãƒãƒ¼ãƒˆç•ªå·ï¼ˆç’°å¢ƒå¤‰æ•°PORTãŒã‚ã‚Œã°ãã‚Œã‚’ã€ç„¡ã‘ã‚Œã°1337ã‚’ä½¿ã†ï¼‰
 server.listen(
-	PORT_NO,	// ƒ|[ƒg”Ô†
+	PORT_NO,	// ãƒãƒ¼ãƒˆç•ªå·
 	() =>
 	{
 		console.log( 'Starting server on port %d', PORT_NO );
 	} );
 
-// socket.io‚ğİ’è
+// socket.ioã‚’è¨­å®š
 io.attach(server);
 
-// ==== ’è” ====
+// ==== å®šæ•° ====
 const OK = 1;
 const NG = 0;
-const MAX_USER = 7;					// Å‘åƒvƒŒƒCƒ„[
-const AT_ENTRANCE    = 0;			// ƒvƒŒƒCƒ„[‚ÌêŠF“üŒû
-const AT_CARD_MAKING = 1;			// ƒvƒŒƒCƒ„[‚ÌêŠFèDì¬
-const AT_PLAYING     = 2;			// ƒvƒŒƒCƒ„[‚ÌêŠFƒQ[ƒ€’†
-const FIELD_UPPER  = 0;				// ã‚Ì‹å
-const FIELD_MIDDLE = 1;				// ’†‚Ì‹å
-const FIELD_BOTTOM = 2;				// ‰º‚Ì‹å
-const ID_NO_USE = 0;				// ID–¢g—p
-const ID_USED   = 1;				// IDg—pÏ‚İ
+const MAX_USER = 7;					// æœ€å¤§ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+const AT_ENTRANCE    = 0;			// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å ´æ‰€ï¼šå…¥å£
+const AT_CARD_MAKING = 1;			// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å ´æ‰€ï¼šæ‰‹æœ­ä½œæˆ
+const AT_PLAYING     = 2;			// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å ´æ‰€ï¼šã‚²ãƒ¼ãƒ ä¸­
+const FIELD_UPPER  = 0;				// ä¸Šã®å¥
+const FIELD_MIDDLE = 1;				// ä¸­ã®å¥
+const FIELD_BOTTOM = 2;				// ä¸‹ã®å¥
+const ID_NO_USE = 0;				// IDæœªä½¿ç”¨
+const ID_USED   = 1;				// IDä½¿ç”¨æ¸ˆã¿
 const MSG_Q_START_GAME  = 0;
 const MSG_Q_NEW_THEME   = 1;
 const MSG_Q_NEXT_TURN   = 2;
@@ -50,28 +50,30 @@ const E_CANT_CHG_RULE_FIELD = 6;	// E-06
 const PLAYER_LINE_COLOR = ["red",    "blue",        "yellow",       "green",          "purple",        "greenyellow", "magenta"];
 const PLAYER_BACK_COLOR = ["coral", "lightskyblue", "lemonchiffon", "mediumseagreen", "mediumorchid",  "yellowgreen", "plum"   ];
 
-// ==== •Ï” ====
-var deckCards = new Array();		// RD
-var fieldCards = [ "", "", "" ];	// êD
-var players   = new Array();		// ƒvƒŒƒCƒ„[
+// ==== å¤‰æ•° ====
+var deckCards = new Array();		// å±±æœ­
+var fieldCards = [ "", "", "" ];	// å ´æœ­
+var players   = new Array();		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 var game = {
-	turn: 1,									// ƒ^[ƒ“
-	rule: {"handlingCards":5, "fieldCards": 3},	// ƒ‹[ƒ‹
-	theme: "",									// ‚¨‘è
+	turn: 1,									// ã‚¿ãƒ¼ãƒ³
+	rule: {"handlingCards":5, "fieldCards": 3},	// ãƒ«ãƒ¼ãƒ«
+	theme: "",									// ãŠé¡Œ
 };
 var stage = AT_CARD_MAKING;
-var dirLogFiles = __dirname + '/log/';
-var filepathLogWrite = dirLogFiles + 'log.txt';	// ƒƒOƒtƒ@ƒCƒ‹‚ÌƒpƒXi{ƒtƒ@ƒCƒ‹–¼ji‘‚«‚İ—pj
-var filepathLogRead  = dirLogFiles + 'log.txt';	// ƒƒOƒtƒ@ƒCƒ‹‚ÌƒpƒXi{ƒtƒ@ƒCƒ‹–¼ji“Ç‚İo‚µ—pj
-var listLog;						// ‰ß‹ƒƒOˆê——iƒtƒ@ƒCƒ‹–¼ˆê——{“ú•tˆê——j
 
-// ==== ŠÖ” ====
-// Ú‘±Šm—§‚Ìˆ—
+// ---- ãƒ­ã‚° ----
+var listLoggingData = new Array();	// ãƒ­ã‚®ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿ã®ãƒªã‚¹ãƒˆ
+var dirLogFiles = __dirname + '/log/';
+var filepathLogWrite = dirLogFiles + 'log.html';	// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‘ã‚¹ï¼ˆï¼‹ãƒ•ã‚¡ã‚¤ãƒ«åï¼‰
+var listLog;						// éå»ãƒ­ã‚°ä¸€è¦§ï¼ˆãƒ•ã‚¡ã‚¤ãƒ«åä¸€è¦§ï¼‹æ—¥ä»˜ä¸€è¦§ï¼‰
+
+// ==== é–¢æ•° ====
+// æ¥ç¶šç¢ºç«‹æ™‚ã®å‡¦ç†
 io.sockets.on('connection', function(socket) {
 	console.log("connect");
-	listLog = searchLogFile();								// ƒƒOƒtƒ@ƒCƒ‹ˆê——æ“¾
+	listLog = searchLogFile();								// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ä¸€è¦§å–å¾—
 	
-	// Ú‘±Ø’fˆ—
+	// æ¥ç¶šåˆ‡æ–­å‡¦ç†
 	socket.on('disconnect', function() {
 		var index;
 		var del_player = 0;
@@ -80,62 +82,63 @@ io.sockets.on('connection', function(socket) {
 		console.log("disconnect");
 		console.log("[before]players: " + players.length);
 		for (index = 0; index < players.length; index++) {
-			if (players[index].socket_id == socket.id) {	// Socket ID‚ªˆê’v‚·‚é
+			if (players[index].socket_id == socket.id) {	// Socket IDãŒä¸€è‡´ã™ã‚‹
 				del_player = 1;
 				break;
 			}
 		}
-		if (del_player == 1) {								// ƒƒOƒAƒEƒg‚µ‚½ƒvƒŒƒCƒ„[‚ ‚è
+		if (del_player == 1) {								// ãƒ­ã‚°ã‚¢ã‚¦ãƒˆã—ãŸãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ã‚Š
 			for (let i = 0; i < players[index].handlingCards.length; i++) {
-				deckCards.push(players[index].handlingCards[i]);	// èD‚ğRD‚É•Ô‚·
-				socket.broadcast.to('room').emit('fluctuation_deck', deckCards.length);	// RD‘‚ğ’Ê’m
+				deckCards.push(players[index].handlingCards[i]);	// æ‰‹æœ­ã‚’å±±æœ­ã«è¿”ã™
+				socket.broadcast.to('room').emit('fluctuation_deck', deckCards.length);	// å±±æœ­å¢—ã‚’é€šçŸ¥
 			}
-			players.splice(index, 1);						// ƒvƒŒƒCƒ„[‚ğíœ
-			socket.broadcast.emit('fluctuation_player', players);	// ƒvƒŒƒCƒ„[Œ¸‚ğ’Ê’m
+			players.splice(index, 1);						// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å‰Šé™¤
+			socket.broadcast.emit('fluctuation_player', players);	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ¸›ã‚’é€šçŸ¥
 			console.log("[after] players: " + players.length);
 			
-			if (players.length == 0) {						// ƒvƒŒƒCƒ„[‘Sˆõ‚ªƒƒOƒIƒt
-				resetGame();								// ƒQ[ƒ€‚ğƒŠƒZƒbƒg
+			if (players.length == 0) {						// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å…¨å“¡ãŒãƒ­ã‚°ã‚ªãƒ•
+				writeLogFile();								// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ï¼ˆhtmlï¼‰ä½œæˆ
+				resetGame();								// ã‚²ãƒ¼ãƒ ã‚’ãƒªã‚»ãƒƒãƒˆ
 			}
 		}
-		else {												// ƒƒOƒCƒ“‚µ‚Ä‚¢‚È‚¢ƒNƒ‰ƒCƒAƒ“ƒg‚ªÚ‘±’f
-			// ‰½‚à‚µ‚È‚¢
+		else {												// ãƒ­ã‚°ã‚¤ãƒ³ã—ã¦ã„ãªã„ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆãŒæ¥ç¶šæ–­
+			// ä½•ã‚‚ã—ãªã„
 		}
 	});
 	
-	// ƒƒOƒCƒ“\¿‚ğóM
+	// ãƒ­ã‚°ã‚¤ãƒ³ç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_login', function(userName) {
 		if (players.length < MAX_USER) {
-			var id = issueID();			// ID‚ğ”­s
+			var id = issueID();			// IDã‚’ç™ºè¡Œ
 			if (id != -1) {
 			
-				// ƒvƒŒƒCƒ„[î•ñ¶¬
+				// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ç”Ÿæˆ
 				let player = {
-					"id":id,							// IDiƒJƒ‰[ƒŠƒ“ƒO—pj
+					"id":id,							// IDï¼ˆã‚«ãƒ©ãƒ¼ãƒªãƒ³ã‚°ç”¨ï¼‰
 					"socket_id":socket.id,
-					"name":userName,					// –¼‘O
-					"color_line":PLAYER_LINE_COLOR[id],	// ˜g‚ÌF
-					"color_back":PLAYER_BACK_COLOR[id],	// ƒŠƒXƒg‚ÌF
-					"at":AT_CARD_MAKING,				// ƒvƒŒƒCƒ„[‚ÌˆÊ’u
+					"name":userName,					// åå‰
+					"color_line":PLAYER_LINE_COLOR[id],	// æ ã®è‰²
+					"color_back":PLAYER_BACK_COLOR[id],	// ãƒªã‚¹ãƒˆã®è‰²
+					"at":AT_CARD_MAKING,				// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®
 				};
-				player.handlingCards = new Array();		// èD
-				players.push(player);					// ƒvƒŒƒCƒ„[’Ç‰Á
+				player.handlingCards = new Array();		// æ‰‹æœ­
+				players.push(player);					// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼è¿½åŠ 
 				console.log("players: " + players.length);
 				console.log(player);
 
 				socket.join('room');
 				
-				socket.broadcast.emit('fluctuation_player', players);	// ‘¼‚ÌƒvƒŒƒCƒ„[‚Ö’Ê’m
+				socket.broadcast.emit('fluctuation_player', players);	// ä»–ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸é€šçŸ¥
 				
 				
-				if (stage != AT_PLAYING)  {				// ƒQ[ƒ€‚Í‚Ü‚¾ŠJn‚µ‚Ä‚¢‚È‚¢‚Æ‚«
-					io.to(socket.id).emit('disp_card_making', players, game, deckCards.length);	// èDì¬‰æ–Ê•\¦
+				if (stage != AT_PLAYING)  {				// ã‚²ãƒ¼ãƒ ã¯ã¾ã é–‹å§‹ã—ã¦ã„ãªã„ã¨ã
+					io.to(socket.id).emit('disp_card_making', players, game, deckCards.length);	// æ‰‹æœ­ä½œæˆç”»é¢è¡¨ç¤º
 				}
-				else {									// ƒQ[ƒ€‚ª‚·‚Å‚Én‚Ü‚Á‚Ä‚¢‚é‚Æ‚«
-					io.to(socket.id).emit('fluctuation_turn', game.turn);								// Œ»İ‚Ìƒ^[ƒ“‚ğ’Ê’m
-					io.to(socket.id).emit('fluctuation_rule_handlings', game.rule.handlingCards);		// Œ»İ‚Ìƒ‹[ƒ‹ièD‚Ì”j‚ğ’Ê’m
-					io.to(socket.id).emit('fluctuation_rule_fields', game.rule.fieldCards);				// Œ»İ‚Ìƒ‹[ƒ‹iê‚Ì”j‚ğ’Ê’m
-					io.to(socket.id).emit('disp_game', game, deckCards.length, fieldCards, players);	// ƒQ[ƒ€‰æ–Ê•\¦
+				else {									// ã‚²ãƒ¼ãƒ ãŒã™ã§ã«å§‹ã¾ã£ã¦ã„ã‚‹ã¨ã
+					io.to(socket.id).emit('fluctuation_turn', game.turn);								// ç¾åœ¨ã®ã‚¿ãƒ¼ãƒ³ã‚’é€šçŸ¥
+					io.to(socket.id).emit('fluctuation_rule_handlings', game.rule.handlingCards);		// ç¾åœ¨ã®ãƒ«ãƒ¼ãƒ«ï¼ˆæ‰‹æœ­ã®æ•°ï¼‰ã‚’é€šçŸ¥
+					io.to(socket.id).emit('fluctuation_rule_fields', game.rule.fieldCards);				// ç¾åœ¨ã®ãƒ«ãƒ¼ãƒ«ï¼ˆå ´ã®æ•°ï¼‰ã‚’é€šçŸ¥
+					io.to(socket.id).emit('disp_game', game, deckCards.length, fieldCards, players);	// ã‚²ãƒ¼ãƒ ç”»é¢è¡¨ç¤º
 				}
 			}
 			else {
@@ -147,151 +150,151 @@ io.sockets.on('connection', function(socket) {
 		}
 	});
 	
-	// ƒvƒŒƒCƒ„[”Šm”F\¿‚ğóM
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ•°ç¢ºèªç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_players', function() {
-		io.emit('return_players', players.length); 								// Ú‘±ƒvƒŒƒCƒ„[‚Ö•ÔM
+		io.emit('return_players', players.length); 								// æ¥ç¶šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸è¿”ä¿¡
 	});
 
-	// èD‚ğRD‚Ö’Ç‰Á\¿‚ğóM
+	// æ‰‹æœ­ã‚’å±±æœ­ã¸è¿½åŠ ç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_card_to_deck', function(addCard) {
 		console.log("add card: " + addCard);
 		deckCards.push(addCard);
-		io.to('room').emit('fluctuation_deck', deckCards.length);					// ƒ‹[ƒ€ƒƒ“ƒo[‚Ö‹¤—L
+		io.to('room').emit('fluctuation_deck', deckCards.length);					// ãƒ«ãƒ¼ãƒ ãƒ¡ãƒ³ãƒãƒ¼ã¸å…±æœ‰
 	});
 	
-	// ƒ‹[ƒ‹•ÏXièD‚Ì”j\¿‚ğóM
+	// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ï¼ˆæ‰‹æœ­ã®æ•°ï¼‰ç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_chg_rule_handlings', function(req) {
 		var index;
-		index = searchPlayerIndex(socket.id);								// ƒvƒŒƒCƒ„[Index‚ğŒŸõ
+		index = searchPlayerIndex(socket.id);								// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Indexã‚’æ¤œç´¢
 
 		if (game.rule.handlingCards != req) {
-			// ƒ‹[ƒ‹‚É•ÏX‚ ‚è
-			if (judgeChageableRuleHandlings(req) == OK) {					// ƒ‹[ƒ‹•ÏXièD‚Ì”j\¿‚Ì‰Â/•s‰Â”»’è
-				// ƒ‹[ƒ‹•ÏX‰Â
+			// ãƒ«ãƒ¼ãƒ«ã«å¤‰æ›´ã‚ã‚Š
+			if (judgeChageableRuleHandlings(req) == OK) {					// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ï¼ˆæ‰‹æœ­ã®æ•°ï¼‰ç”³è«‹ã®å¯/ä¸å¯åˆ¤å®š
+				// ãƒ«ãƒ¼ãƒ«å¤‰æ›´å¯
 				game.rule.handlingCards = req;
-				io.to(players[index].socket_id).emit('disp_message', MSG_COMP_CHG_RULE);	// ƒ‹[ƒ‹•ÏXŠ®ƒƒbƒZ[ƒW
-				io.to('room').emit('fluctuation_rule_handlings', game.rule.handlingCards);	// ƒ‹[ƒ€ƒƒ“ƒo[‚Ö‹¤—L
+				io.to(players[index].socket_id).emit('disp_message', MSG_COMP_CHG_RULE);	// ãƒ«ãƒ¼ãƒ«å¤‰æ›´å®Œãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
+				io.to('room').emit('fluctuation_rule_handlings', game.rule.handlingCards);	// ãƒ«ãƒ¼ãƒ ãƒ¡ãƒ³ãƒãƒ¼ã¸å…±æœ‰
 			}
 			else {
-				// ƒ‹[ƒ‹•ÏX•s‰Â
-				io.to(players[index].socket_id).emit('disp_alert_message', E_CANT_CHG_RULE_HAND);	// ƒ‹[ƒ‹•ÏX‚Å‚«‚È‚¢ƒƒbƒZ[ƒW
-				io.to(players[index].socket_id).emit('restore_rule_handlings', game.rule.handlingCards);	// •\¦‚ğŒ³‚É–ß‚·w—ß
+				// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ä¸å¯
+				io.to(players[index].socket_id).emit('disp_alert_message', E_CANT_CHG_RULE_HAND);	// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ã§ããªã„ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
+				io.to(players[index].socket_id).emit('restore_rule_handlings', game.rule.handlingCards);	// è¡¨ç¤ºã‚’å…ƒã«æˆ»ã™æŒ‡ä»¤
 			}
 		}
 		else {
-			// ƒ‹[ƒ‹‚É•ÏX‚È‚µ
+			// ãƒ«ãƒ¼ãƒ«ã«å¤‰æ›´ãªã—
 		}
 	});
 	
-	// ƒ‹[ƒ‹•ÏXiê‚Ì”j\¿‚ğóM
+	// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ï¼ˆå ´ã®æ•°ï¼‰ç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_chg_rule_fields', function(req) {
 		var index;
-		index = searchPlayerIndex(socket.id);								// ƒvƒŒƒCƒ„[Index‚ğŒŸõ
+		index = searchPlayerIndex(socket.id);								// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Indexã‚’æ¤œç´¢
 		
 		if (game.rule.fieldCards != req) {
-			// ƒ‹[ƒ‹‚É•ÏX‚ ‚è
-			if (judgeChageableRuleFields(req) == OK) {						// ƒ‹[ƒ‹•ÏXiê‚Ì”j\¿‚Ì‰Â/•s‰Â”»’è
-				//ƒ‹[ƒ‹•ÏX‰Â
+			// ãƒ«ãƒ¼ãƒ«ã«å¤‰æ›´ã‚ã‚Š
+			if (judgeChageableRuleFields(req) == OK) {						// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ï¼ˆå ´ã®æ•°ï¼‰ç”³è«‹ã®å¯/ä¸å¯åˆ¤å®š
+				//ãƒ«ãƒ¼ãƒ«å¤‰æ›´å¯
 				game.rule.fieldCards = req;
-				io.to(players[index].socket_id).emit('disp_message', MSG_COMP_CHG_RULE);	// ƒ‹[ƒ‹•ÏXŠ®ƒƒbƒZ[ƒW
-				io.to('room').emit('fluctuation_rule_fields', game.rule.fieldCards);		// ƒ‹[ƒ€ƒƒ“ƒo[‚Ö‹¤—L
+				io.to(players[index].socket_id).emit('disp_message', MSG_COMP_CHG_RULE);	// ãƒ«ãƒ¼ãƒ«å¤‰æ›´å®Œãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
+				io.to('room').emit('fluctuation_rule_fields', game.rule.fieldCards);		// ãƒ«ãƒ¼ãƒ ãƒ¡ãƒ³ãƒãƒ¼ã¸å…±æœ‰
 			}
 			else {
-				// ƒ‹[ƒ‹•ÏX•s‰Â
-				io.to(players[index].socket_id).emit('disp_alert_message', E_CANT_CHG_RULE_FIELD);	// ƒ‹[ƒ‹•ÏX‚Å‚«‚È‚¢ƒƒbƒZ[ƒW
-				io.to(players[index].socket_id).emit('restore_rule_fields', game.rule.fieldCards);	// •\¦‚ğŒ³‚É–ß‚·w—ß
+				// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ä¸å¯
+				io.to(players[index].socket_id).emit('disp_alert_message', E_CANT_CHG_RULE_FIELD);	// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ã§ããªã„ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
+				io.to(players[index].socket_id).emit('restore_rule_fields', game.rule.fieldCards);	// è¡¨ç¤ºã‚’å…ƒã«æˆ»ã™æŒ‡ä»¤
 			}
 		}
 	});
 
-	// ƒQ[ƒ€ŠJn\¿‚ğóM
+	// ã‚²ãƒ¼ãƒ é–‹å§‹ç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_game_start', function(req) {
-		initGameSystem();																// ƒQ[ƒ€ƒVƒXƒeƒ€‰Šú‰»
-		io.to('room').emit('disp_game', game, deckCards.length, fieldCards, players);	// ƒ‹[ƒ€ƒƒ“ƒo[‚Ö‹¤—L
+		initGameSystem();																// ã‚²ãƒ¼ãƒ ã‚·ã‚¹ãƒ†ãƒ åˆæœŸåŒ–
+		io.to('room').emit('disp_game', game, deckCards.length, fieldCards, players);	// ãƒ«ãƒ¼ãƒ ãƒ¡ãƒ³ãƒãƒ¼ã¸å…±æœ‰
 	});
 
-	// ƒvƒŒƒCƒ„[î•ñ‚ğ—v‹‚ğóM
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ã‚’è¦æ±‚ã‚’å—ä¿¡
 	socket.on('req_player_info', function() {
 		var index;
-		index = searchPlayerIndex(socket.id);									// ƒvƒŒƒCƒ„[Index‚ğŒŸõ
+		index = searchPlayerIndex(socket.id);									// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Indexã‚’æ¤œç´¢
 		
-		io.to(players[index].socket_id).emit('player_information', game.rule.handlingCards, players[index]);	// —v‹Œ³‚ÖƒvƒŒƒCƒ„[î•ñ‚ğ‰“š
+		io.to(players[index].socket_id).emit('player_information', game.rule.handlingCards, players[index]);	// è¦æ±‚å…ƒã¸ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æƒ…å ±ã‚’å¿œç­”
 	});
 
-	// ƒT[ƒo‚ÖèD’ño—v‹
+	// ã‚µãƒ¼ãƒã¸æ‰‹æœ­æå‡ºè¦æ±‚
 	socket.on('req_card_to_field', function(now_select, selectCard) {
 		var index;
-		index = searchPlayerIndex(socket.id);									// ƒvƒŒƒCƒ„[Index‚ğŒŸõ
+		index = searchPlayerIndex(socket.id);									// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Indexã‚’æ¤œç´¢
 		
-		if (((game.rule.fieldCards == 2) && (now_select == FIELD_MIDDLE)) ||	// 2–‡ƒ‹[ƒ‹A‚©‚Â’†‚Ì‹å‚Ì‚Æ‚«
-			(fieldCards[now_select] != "")) {									// ê‚ª‹ó‚Å‚È‚¢‚Æ‚«
-			// ‰½‚à‚µ‚È‚¢
+		if (((game.rule.fieldCards == 2) && (now_select == FIELD_MIDDLE)) ||	// 2æšãƒ«ãƒ¼ãƒ«ã€ã‹ã¤ä¸­ã®å¥ã®ã¨ã
+			(fieldCards[now_select] != "")) {									// å ´ãŒç©ºã§ãªã„ã¨ã
+			// ä½•ã‚‚ã—ãªã„
 		}
 		else {
-			fieldCards[now_select] = players[index].handlingCards[selectCard];	// èD‚ğê‚ÖƒRƒs[
-			players[index].handlingCards.splice(selectCard, 1);					// ‘I‘ğ’†‚ÌèD‚ğíœ
+			fieldCards[now_select] = players[index].handlingCards[selectCard];	// æ‰‹æœ­ã‚’å ´ã¸ã‚³ãƒ”ãƒ¼
+			players[index].handlingCards.splice(selectCard, 1);					// é¸æŠä¸­ã®æ‰‹æœ­ã‚’å‰Šé™¤
 			
-			socket.broadcast.to('room').emit('fluctuation_cards', players);				// ‘¼‚ÌƒvƒŒƒCƒ„[‚Ö’Ê’m
-			io.to(players[index].socket_id).emit('success_card_to_field', players);// —v‹Œ³‚Ö¬Œ÷‰“š
+			socket.broadcast.to('room').emit('fluctuation_cards', players);				// ä»–ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸é€šçŸ¥
+			io.to(players[index].socket_id).emit('success_card_to_field', players);// è¦æ±‚å…ƒã¸æˆåŠŸå¿œç­”
 		}
 	});
 	
-	// ê‚Ìî•ñ—v‹‚ğóM
+	// å ´ã®æƒ…å ±è¦æ±‚ã‚’å—ä¿¡
 	socket.on('req_fields_information', function() {
 		var index;
-		index = searchPlayerIndex(socket.id);									// ƒvƒŒƒCƒ„[Index‚ğŒŸõ
+		index = searchPlayerIndex(socket.id);									// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Indexã‚’æ¤œç´¢
 		
-		io.to(players[index].socket_id).emit('fields_information', game.rule.fieldCards, fieldCards);	// —v‹Œ³‚Öê‚Ìî•ñ‚ğ‰“š
+		io.to(players[index].socket_id).emit('fields_information', game.rule.fieldCards, fieldCards);	// è¦æ±‚å…ƒã¸å ´ã®æƒ…å ±ã‚’å¿œç­”
 	});
 	
-	// RD‚©‚çƒhƒ[—v‹‚ğóM
+	// å±±æœ­ã‹ã‚‰ãƒ‰ãƒ­ãƒ¼è¦æ±‚ã‚’å—ä¿¡
 	socket.on('req_draw_from_deck', function() {
 		var index;
-		index = searchPlayerIndex(socket.id);										// ƒvƒŒƒCƒ„[Index‚ğŒŸõ
+		index = searchPlayerIndex(socket.id);										// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Indexã‚’æ¤œç´¢
 		
 		if (deckCards.length > 0) {
 			if (players[index].handlingCards.length < game.rule.handlingCards) {
-				players[index].handlingCards.push(deckCards[0]);					// RDæ“ªƒJ[ƒh‚ğèD‚É‰Á‚¦‚é
-				deckCards.shift();													// RDæ“ªƒJ[ƒhíœ
+				players[index].handlingCards.push(deckCards[0]);					// å±±æœ­å…ˆé ­ã‚«ãƒ¼ãƒ‰ã‚’æ‰‹æœ­ã«åŠ ãˆã‚‹
+				deckCards.shift();													// å±±æœ­å…ˆé ­ã‚«ãƒ¼ãƒ‰å‰Šé™¤
 				
-				socket.broadcast.to('room').emit('fluctuation_player', players);			// ‘¼‚ÌƒvƒŒƒCƒ„[‚Ö’Ê’m
-				socket.broadcast.to('room').emit('fluctuation_deck', deckCards.length);		// ‘¼‚ÌƒvƒŒƒCƒ„[‚Ö’Ê’m
-				io.to(players[index].socket_id).emit('success_draw', deckCards.length, players);	// —v‹Œ³‚Ö¬Œ÷‰“š
+				socket.broadcast.to('room').emit('fluctuation_player', players);			// ä»–ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸é€šçŸ¥
+				socket.broadcast.to('room').emit('fluctuation_deck', deckCards.length);		// ä»–ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸é€šçŸ¥
+				io.to(players[index].socket_id).emit('success_draw', deckCards.length, players);	// è¦æ±‚å…ƒã¸æˆåŠŸå¿œç­”
 			}
 			else {
-				io.to(players[index].socket_id).emit('disp_alert_message', E_FULL_HANDLINGS);	// èD‚¢‚Á‚Ï‚¢ƒƒbƒZ[ƒW
+				io.to(players[index].socket_id).emit('disp_alert_message', E_FULL_HANDLINGS);	// æ‰‹æœ­ã„ã£ã±ã„ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
 			}
 		}
 		else {
-			io.to(players[index].socket_id).emit('disp_alert_message', E_EMPTY_DECK);	// RD‚ª‚È‚¢ƒƒbƒZ[ƒW
+			io.to(players[index].socket_id).emit('disp_alert_message', E_EMPTY_DECK);	// å±±æœ­ãŒãªã„ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
 		}
 	});
 	
-	// ‚¨‘è\¿‚ğóM
+	// ãŠé¡Œç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_input_theme', function(new_theme) {
 		game.theme = new_theme;
 		
-		io.to('room').emit('fluctuation_theme', new_theme);		// ƒ‹[ƒ€ƒƒ“ƒo[‚Ö‹¤—L
+		io.to('room').emit('fluctuation_theme', new_theme);		// ãƒ«ãƒ¼ãƒ ãƒ¡ãƒ³ãƒãƒ¼ã¸å…±æœ‰
 	});
 
-	// Ÿƒ^[ƒ“ˆÚs\¿‚ğóM
+	// æ¬¡ã‚¿ãƒ¼ãƒ³ç§»è¡Œç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_next_turn', function() {
-//		writeLog();												// ƒƒO‚ğƒtƒ@ƒCƒ‹‘‚«‚İ
-		removeCardAllFields();									// ê‚ğƒNƒŠƒA
-		game.turn++;											// ƒ^[ƒ“‚ğƒCƒ“ƒNƒŠƒƒ“ƒg
+		loggingTurnInfo();										// ã‚¿ãƒ¼ãƒ³æƒ…å ±ã‚’ãƒ­ã‚®ãƒ³ã‚°
+		removeCardAllFields();									// å ´ã‚’ã‚¯ãƒªã‚¢
+		game.turn++;											// ã‚¿ãƒ¼ãƒ³ã‚’ã‚¤ãƒ³ã‚¯ãƒªãƒ¡ãƒ³ãƒˆ
 		
-		// ƒ‹[ƒ€ƒƒ“ƒo[‚Ö‹¤—L
+		// ãƒ«ãƒ¼ãƒ ãƒ¡ãƒ³ãƒãƒ¼ã¸å…±æœ‰
 		io.to('room').emit('fields_information', game.rule.fieldCards, fieldCards);
 		io.to('room').emit('fluctuation_turn', game.turn);
 	});
 	
-	// ‰ß‹ƒƒOŠm”F\¿‚ğóM
+	// éå»ãƒ­ã‚°ç¢ºèªç”³è«‹ã‚’å—ä¿¡
 	socket.on('req_logs', function() {
-		io.to(socket.id).emit('return_logs', listLog.date_list);	// Ú‘±ƒvƒŒƒCƒ„[‚Ö•ÔM
+		io.to(socket.id).emit('return_logs', listLog);			// æ¥ç¶šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸è¿”ä¿¡
 	});
 });
 
-// ƒvƒŒƒCƒ„[IndexŒŸõ
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Indexæ¤œç´¢
 function searchPlayerIndex(socket_id)
 {
 	var index;
@@ -304,7 +307,7 @@ function searchPlayerIndex(socket_id)
 	return index;
 }
 
-// ƒvƒŒƒCƒ„[ID‚Ì”­s
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼IDã®ç™ºè¡Œ
 function issueID()
 {
 	var serch_id;
@@ -313,30 +316,30 @@ function issueID()
 	
 	for (serch_id = 0; serch_id < MAX_USER; serch_id++) {
 		for (i = 0; i < players.length; i++) {
-			if (serch_id == players[i].id) {	// serch_id‚Í”­sÏ‚İ
-				break;							// Ÿ‚Ìserch_id‚Ö
+			if (serch_id == players[i].id) {	// serch_idã¯ç™ºè¡Œæ¸ˆã¿
+				break;							// æ¬¡ã®serch_idã¸
 			}
 		}
 
-		if (i == players.length) {				// ‘SƒvƒŒƒCƒ„[Šm”FÏ‚İ
-			new_id = serch_id;					// ID”­s
-			break;								// Š®—¹
+		if (i == players.length) {				// å…¨ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç¢ºèªæ¸ˆã¿
+			new_id = serch_id;					// IDç™ºè¡Œ
+			break;								// å®Œäº†
 		}
 	}
 	
 	return new_id;
 }
 
-// ƒQ[ƒ€ƒVƒXƒeƒ€‰Šú‰»
+// ã‚²ãƒ¼ãƒ ã‚·ã‚¹ãƒ†ãƒ åˆæœŸåŒ–
 function initGameSystem()
 {
-	genLogFilePath();							// ƒƒOƒtƒ@ƒCƒ‹–¼‚ğ¶¬
-	shuffleDeckCards();							// RD‚ğƒVƒƒƒbƒtƒ‹
-	handOutCards();								// RD‚©‚çŠeƒvƒŒƒCƒ„[‚Ö”z‚é
-	stage = AT_PLAYING;							// ƒQ[ƒ€ƒXƒe[ƒW
+	genLogFilePath();							// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«åã‚’ç”Ÿæˆ
+	shuffleDeckCards();							// å±±æœ­ã‚’ã‚·ãƒ£ãƒƒãƒ•ãƒ«
+	handOutCards();								// å±±æœ­ã‹ã‚‰å„ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸é…ã‚‹
+	stage = AT_PLAYING;							// ã‚²ãƒ¼ãƒ ã‚¹ãƒ†ãƒ¼ã‚¸
 }
 
-// RD‚ğƒVƒƒƒbƒtƒ‹
+// å±±æœ­ã‚’ã‚·ãƒ£ãƒƒãƒ•ãƒ«
 function shuffleDeckCards()
 {
 	for (let i = deckCards.length; 1 < i; i--) {
@@ -345,61 +348,62 @@ function shuffleDeckCards()
 	}
 }
 
-// RD‚©‚çŠeƒvƒŒƒCƒ„[‚ÖD‚ğ”z‚é
+// å±±æœ­ã‹ã‚‰å„ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸æœ­ã‚’é…ã‚‹
 function handOutCards()
 {
 	for (let i = 0; i < players.length; i++) {
 		for (let j = 0; j < game.rule.handlingCards; j++) {
-			players[i].handlingCards.push(deckCards[0]);	// RD‚Ìæ“ª‚ÌƒJ[ƒh‚ğ’Ç‰Á
-			deckCards.shift();								// æ“ªƒJ[ƒh‚ğíœ
+			players[i].handlingCards.push(deckCards[0]);	// å±±æœ­ã®å…ˆé ­ã®ã‚«ãƒ¼ãƒ‰ã‚’è¿½åŠ 
+			deckCards.shift();								// å…ˆé ­ã‚«ãƒ¼ãƒ‰ã‚’å‰Šé™¤
 		}
 	}
 }
 
-// ƒ‹[ƒ‹•ÏXièD‚Ì”j\¿‚Ì‰Â/•s‰Â”»’è
+// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ï¼ˆæ‰‹æœ­ã®æ•°ï¼‰ç”³è«‹ã®å¯/ä¸å¯åˆ¤å®š
 function judgeChageableRuleHandlings(req)
 {
 	for (let i = 0; i < players.length; i++) {
-		if (players[i].handlingCards.length > req) {		// ƒ‹[ƒ‹‚æ‚è‘½‚­èD‚ğ‚Á‚Ä‚¢‚éƒvƒŒƒCƒ„[‚ ‚è
-			return NG;										// ƒ‹[ƒ‹•ÏX•s‰Â
+		if (players[i].handlingCards.length > req) {		// ãƒ«ãƒ¼ãƒ«ã‚ˆã‚Šå¤šãæ‰‹æœ­ã‚’æŒã£ã¦ã„ã‚‹ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ã‚Š
+			return NG;										// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ä¸å¯
 		}
 	}
 	
-	return OK;												// ƒ‹[ƒ‹•ÏX‰Â
+	return OK;												// ãƒ«ãƒ¼ãƒ«å¤‰æ›´å¯
 }
 
-// ƒ‹[ƒ‹•ÏXiê‚Ì”j\¿‚Ì‰Â/•s‰Â”»’è
+// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ï¼ˆå ´ã®æ•°ï¼‰ç”³è«‹ã®å¯/ä¸å¯åˆ¤å®š
 function judgeChageableRuleFields(req)
 {
 	if (req == 2) {
-		// ê2–‡ƒ‹[ƒ‹‚Ö•ÏX
-		if (fieldCards[FIELD_MIDDLE] != "") {				// ’†‚Ì‹å’ñoÏ‚İ
-			return NG;										// ƒ‹[ƒ‹•ÏX•s‰Â
+		// å ´2æšãƒ«ãƒ¼ãƒ«ã¸å¤‰æ›´æ™‚
+		if (fieldCards[FIELD_MIDDLE] != "") {				// ä¸­ã®å¥æå‡ºæ¸ˆã¿
+			return NG;										// ãƒ«ãƒ¼ãƒ«å¤‰æ›´ä¸å¯
 		}
 	}
 	
-	return OK;												// ƒ‹[ƒ‹•ÏX‰Â
+	return OK;												// ãƒ«ãƒ¼ãƒ«å¤‰æ›´å¯
 }
 
-// ê‚Ì‘SƒJ[ƒh‚ğíœ
+// å ´ã®å…¨ã‚«ãƒ¼ãƒ‰ã‚’å‰Šé™¤
 function removeCardAllFields()
 {
-	fieldCards[FIELD_UPPER]  = "";							// ã‚Ì‹å
-	fieldCards[FIELD_MIDDLE] = "";							// ’†‚Ì‹å
-	fieldCards[FIELD_BOTTOM] = "";							// ‰º‚Ì‹å
+	fieldCards[FIELD_UPPER]  = "";							// ä¸Šã®å¥
+	fieldCards[FIELD_MIDDLE] = "";							// ä¸­ã®å¥
+	fieldCards[FIELD_BOTTOM] = "";							// ä¸‹ã®å¥
 }
 
-// ƒQ[ƒ€‚ğƒŠƒZƒbƒg
+// ã‚²ãƒ¼ãƒ ã‚’ãƒªã‚»ãƒƒãƒˆ
 function resetGame()
 {
-	game.turn = 1;											// ƒ^[ƒ“1‚Ö
-	game.theme = "";										// ‚¨‘èƒNƒŠƒA
-	removeCardAllFields();									// ê‚ğƒNƒŠƒA
-	deckCards.splice(0);									// RDƒNƒŠƒA
-	stage = AT_CARD_MAKING;									// èDì¬ƒXƒe[ƒW
+	game.turn = 1;											// ã‚¿ãƒ¼ãƒ³1ã¸
+	game.theme = "";										// ãŠé¡Œã‚¯ãƒªã‚¢
+	removeCardAllFields();									// å ´ã‚’ã‚¯ãƒªã‚¢
+	deckCards.splice(0);									// å±±æœ­ã‚¯ãƒªã‚¢
+	stage = AT_CARD_MAKING;									// æ‰‹æœ­ä½œæˆã‚¹ãƒ†ãƒ¼ã‚¸
+	listLoggingData.splice(0);								// ãƒ­ã‚®ãƒ³ã‚°ãƒ‡ãƒ¼ã‚¿å‰Šé™¤
 }
 
-// ƒƒOƒtƒ@ƒCƒ‹‚ğŒŸõ
+// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ¤œç´¢
 function searchLogFile()
 {
 	var list_log_date = new Array();
@@ -412,50 +416,27 @@ function searchLogFile()
 //	console.log("All file list: " + list_all_fname);
 	
 	for (let i = 0; i < list_all_fname.length; i++) {
-		if ((list_all_fname[i].length == 20) &&				// ƒtƒ@ƒCƒ‹–¼20•¶šˆê’vŠm”F
-			(list_all_fname[i].substr(0, 4) == "log_") && 	// ƒtƒH[ƒ}ƒbƒgˆê’vŠm”Fulog_v
-			(list_all_fname[i].substr(-4) == ".txt")) {		// Šg’£qˆê’vŠm”Fu.txtv
-			list_fname.push(list_all_fname[i]);
-			let date_in_filename = list_all_fname[i].substr(4, (list_all_fname[i].length - 8));	// “ú•t”²‚«o‚µ
-			let date_with_synbol = strInsSymbol(date_in_filename);		// “ú•t‚É"/"‚â":"‚ğ•t‰Á
+		if ((list_all_fname[i].length == 21) &&				// ãƒ•ã‚¡ã‚¤ãƒ«å21æ–‡å­—ä¸€è‡´ç¢ºèª
+			(list_all_fname[i].substr(0, 4) == "log_") && 	// ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆä¸€è‡´ç¢ºèªã€Œlog_ã€
+			(list_all_fname[i].substr(-5) == ".html")) {	// æ‹¡å¼µå­ä¸€è‡´ç¢ºèªã€Œ.htmlã€
+			list_fname.push(dirLogFiles + list_all_fname[i]);
+			let date_in_filename = list_all_fname[i].substr(4, (list_all_fname[i].length - 9));	// æ—¥ä»˜æŠœãå‡ºã—
+			let date_with_synbol = strInsSymbol(date_in_filename);		// æ—¥ä»˜ã«"/"ã‚„":"ã‚’ä»˜åŠ 
 			list_log_date.push(date_with_synbol);
 		}
 	}
 //	console.log("File list: " + list_fname);
 //	console.log("Date list: " + list_log_date);
 	
-	return_obj.file_list = list_fname;						// ƒƒOƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ÌƒŠƒXƒg
-	return_obj.date_list  = list_log_date;					// ƒƒOƒtƒ@ƒCƒ‹‚Ì“ú•tƒŠƒXƒg
+	return_obj.file_list = list_fname;						// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ•ã‚¡ã‚¤ãƒ«åã®ãƒªã‚¹ãƒˆ
+	return_obj.date_list  = list_log_date;					// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã®æ—¥ä»˜ãƒªã‚¹ãƒˆ
 	
 	return return_obj;
 }
 
-// ƒƒO‚ğƒtƒ@ƒCƒ‹“Ç‚İo‚µ
-function readLog()
+// ã‚¿ãƒ¼ãƒ³æƒ…å ±ã‚’ãƒ­ã‚®ãƒ³ã‚°
+function loggingTurnInfo()
 {
-	filepathLogRead = dirLogFiles + 'log_202105080832.txt';
-	
-	const stream = fs.createReadStream(filepathLogRead);
-
-	const rl = readline.createInterface({
-		input: stream,
-	});
-	
-	rl.on('line', (lineString) => {
-		console.log("[file read] " + lineString);
-	});
-
-	rl.on('close', () => {
-		console.log("file read END!");
-	});
-}
-
-// ƒƒO‚ğƒtƒ@ƒCƒ‹‘‚«‚İ
-function writeLog()
-{
-	const options = {
-		flags: "a"  // ’Ç‰Á‘‚«‚İƒ‚[ƒh
-	};
 	var playerList = "";
 	for (let i = 0; i < players.length; i++) {
 		if (i > 0) {
@@ -463,22 +444,39 @@ function writeLog()
 		}
 		playerList = playerList + players[i].name;
 	}
-	var writeData = [
-		(game.turn).toString() + "\n",
-		game.theme + "\n",
-		fieldCards[FIELD_UPPER] + "\n",
-		fieldCards[FIELD_MIDDLE] + "\n",
-		fieldCards[FIELD_BOTTOM] + "\n",
-		playerList + "\n"
+	var loggingData = [
+		(game.turn).toString(),
+		game.theme,
+		fieldCards[FIELD_UPPER],
+		fieldCards[FIELD_MIDDLE],
+		fieldCards[FIELD_BOTTOM],
+		playerList
 	];
-	
+	listLoggingData.push(loggingData);
+}
+
+// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ï¼ˆhtmlï¼‰ä½œæˆ
+function writeLogFile()
+{
+	const css_str = '<link href="log.css" rel="stylesheet" type="text/css">'
+	const options = {
+		flags: "a",  		// è¿½åŠ æ›¸ãè¾¼ã¿ãƒ¢ãƒ¼ãƒ‰
+		encoding: "utf8"	// UTF-8
+	};
 	const stream = fs.createWriteStream(filepathLogWrite, options);
-	for (let i = 0; i < 6; i++) {
-		stream.write(writeData[i]);
+	stream.write("<html><head>" + css_str + "<title>ãƒ­ã‚°</title></head><body>\n");
+	stream.write("<table><tr><th>ã‚¿ãƒ¼ãƒ³</th><th>ãŠé¡Œ</th><th>ä¸Šã®å¥</th><th>ä¸­ã®å¥</th><th>ä¸‹ã®å¥</th><th>ãƒ¡ãƒ³ãƒãƒ¼</th></tr>\n");
+	for (let i = 0; i < listLoggingData.length; i++) {
+		stream.write("<tr>");
+		for (let j = 0; j < 6; j++) {
+			stream.write("<td>" + listLoggingData[i][j]) + "</td>";
+		}
+		stream.write("</tr>\n");
 	}
+	stream.write("</table></body></html>\n");
 	stream.end();
 
-	// ƒGƒ‰[ˆ—
+	// ã‚¨ãƒ©ãƒ¼å‡¦ç†
 	stream.on("error", (err)=>{
 		if (err) {
 			console.log(err.message);
@@ -486,13 +484,13 @@ function writeLog()
 	});
 }
 
-// ƒƒOƒtƒ@ƒCƒ‹–¼¶¬
+// ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«åç”Ÿæˆ
 function genLogFilePath()
 {
-	filepathLogWrite = dirLogFiles + 'log_' + getDateCode() + '.txt';
+	filepathLogWrite = dirLogFiles + 'log_' + getDateCode() + '.html';
 }
 
-// “úƒR[ƒhæ“¾
+// æ—¥æ™‚ã‚³ãƒ¼ãƒ‰å–å¾—
 function getDateCode()
 {
 	const date_now = new Date();
@@ -505,7 +503,7 @@ function getDateCode()
 	return date_code;
 }
 
-// “ú•tAŠÔ‚Ì‹L†‚ğ‘}“ü‚·‚é
+// æ—¥ä»˜ã€æ™‚é–“ã®è¨˜å·ã‚’æŒ¿å…¥ã™ã‚‹
 function strInsSymbol(str)
 {
 	var res = str.substr(0, 4) + '/' + str.substr(4, 2) + '/' + str.substr(6, 2) + '[' + str.substr(8, 2) + ':' + str.substr(10, 2) + ']';

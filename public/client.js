@@ -452,7 +452,7 @@ function getMyHandCards()
 }
 
 // [関数]過去ログテーブル作成
-function genLogTable(list_log_date)
+function genLogTable(list_log)
 {
 	var elem = document.getElementById('tableLog');
 	let elem_old = document.getElementById('tableLogData');
@@ -473,13 +473,17 @@ function genLogTable(list_log_date)
 	tbl.appendChild(tblBody);
 
 	tblBody = document.createElement("tbody");
-	if (list_log_date.length != 0) {
-		for (let i = 0; i < list_log_date.length; i++) {
+	if (list_log.file_list.length != 0) {
+		for (let i = 0; i < list_log.file_list.length; i++) {
 			row = document.createElement("tr");
 			cell = document.createElement("td");
-			cellText = document.createTextNode(list_log_date[i]);
+			let elem_a = document.createElement("a");
+			cellText = document.createTextNode(list_log.date_list[i]);
+			elem_a.appendChild(cellText);
+			elem_a.setAttribute("href", list_log.file_list[i]);
+			elem_a.setAttribute("target", "_blank");
+			cell.appendChild(elem_a);
 			cell.setAttribute("bgcolor", "white");
-			cell.appendChild(cellText);
 			row.appendChild(cell);
 			tblBody.appendChild(row);
 		}
@@ -510,7 +514,7 @@ function checkLog()
 }
 
 // サーバから過去ログ確認申請の応答を受信
-socket.on('return_logs', function(list_log_date)
+socket.on('return_logs', function(list_log)
 {
-	genLogTable(list_log_date);				// 過去ログ日付リストテーブル生成
+	genLogTable(list_log);					// 過去ログテーブル生成
 });
