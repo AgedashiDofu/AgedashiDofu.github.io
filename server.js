@@ -2,6 +2,9 @@
 var express = require('express');
 var http = require( 'http' );
 var socketIO = require('socket.io');
+var fs = require('fs');
+var iconv = require('iconv-lite');
+var readline = require('readline');
 var app = express();		// expressアプリケーション生成
 var server = http.Server( app );
 var io = socketIO( server );
@@ -57,10 +60,17 @@ var game = {
 	theme: "",									// お題
 };
 var stage = AT_CARD_MAKING;
+var dirLogFiles = __dirname + '/log/';
+var filepathLogWrite = dirLogFiles + 'log.txt';	// ログファイルのパス（＋ファイル名）（書き込み用）
+var filepathLogRead  = dirLogFiles + 'log.txt';	// ログファイルのパス（＋ファイル名）（読み出し用）
+var listLog;						// 過去ログ一覧（ファイル名一覧＋日付一覧）
 
 // ==== 関数 ====
 // 接続確立時の処理
 io.sockets.on('connection', function(socket) {
+	console.log("connect");
+	listLog = searchLogFile();								// ログファイル一覧取得
+	
 	// 接続切断処理
 	socket.on('disconnect', function() {
 		var index;
@@ -92,8 +102,6 @@ io.sockets.on('connection', function(socket) {
 			// 何もしない
 		}
 	});
-
-	console.log("connect");
 	
 	// ログイン申請を受信
 	socket.on('req_login', function(userName) {
@@ -218,10 +226,8 @@ io.sockets.on('connection', function(socket) {
 		if (((game.rule.fieldCards == 2) && (now_select == FIELD_MIDDLE)) ||	// 2枚ルール、かつ中の句のとき
 			(fieldCards[now_select] != "")) {									// 場が空でないとき
 			// 何もしない
-			console.log("req_card_to_field : fail");
 		}
 		else {
-			console.log("req_card_to_field : success");
 			fieldCards[now_select] = players[index].handlingCards[selectCard];	// 手札を場へコピー
 			players[index].handlingCards.splice(selectCard, 1);					// 選択中の手札を削除
 			
@@ -270,12 +276,18 @@ io.sockets.on('connection', function(socket) {
 
 	// 次ターン移行申請を受信
 	socket.on('req_next_turn', function() {
+//		writeLog();												// ログをファイル書き込み
 		removeCardAllFields();									// 場をクリア
 		game.turn++;											// ターンをインクリメント
 		
 		// ルームメンバーへ共有
 		io.to('room').emit('fields_information', game.rule.fieldCards, fieldCards);
 		io.to('room').emit('fluctuation_turn', game.turn);
+	});
+	
+	// 過去ログ確認申請を受信
+	socket.on('req_logs', function() {
+		io.to(socket.id).emit('return_logs', listLog.date_list);	// 接続プレイヤーへ返信
 	});
 });
 
@@ -318,6 +330,7 @@ function issueID()
 // ゲームシステム初期化
 function initGameSystem()
 {
+	genLogFilePath();							// ログファイル名を生成
 	shuffleDeckCards();							// 山札をシャッフル
 	handOutCards();								// 山札から各プレイヤーへ配る
 	stage = AT_PLAYING;							// ゲームステージ
@@ -386,3 +399,115 @@ function resetGame()
 	stage = AT_CARD_MAKING;									// 手札作成ステージ
 }
 
+// ログファイルを検索
+function searchLogFile()
+{
+	var list_log_date = new Array();
+	var list_fname = new Array();
+	var return_obj = new Object();
+	const allDirents = fs.readdirSync(dirLogFiles, { withFileTypes: true });
+	
+	const list_all_fname = allDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
+	
+//	console.log("All file list: " + list_all_fname);
+	
+	for (let i = 0; i < list_all_fname.length; i++) {
+		if ((list_all_fname[i].length == 20) &&				// ファイル名20文字一致確認
+			(list_all_fname[i].substr(0, 4) == "log_") && 	// フォーマット一致確認「log_」
+			(list_all_fname[i].substr(-4) == ".txt")) {		// 拡張子一致確認「.txt」
+			list_fname.push(list_all_fname[i]);
+			let date_in_filename = list_all_fname[i].substr(4, (list_all_fname[i].length - 8));	// 日付抜き出し
+			let date_with_synbol = strInsSymbol(date_in_filename);		// 日付に"/"や":"を付加
+			list_log_date.push(date_with_synbol);
+		}
+	}
+//	console.log("File list: " + list_fname);
+//	console.log("Date list: " + list_log_date);
+	
+	return_obj.file_list = list_fname;						// ログファイルのファイル名のリスト
+	return_obj.date_list  = list_log_date;					// ログファイルの日付リスト
+	
+	return return_obj;
+}
+
+// ログをファイル読み出し
+function readLog()
+{
+	filepathLogRead = dirLogFiles + 'log_202105080832.txt';
+	
+	const stream = fs.createReadStream(filepathLogRead);
+
+	const rl = readline.createInterface({
+		input: stream,
+	});
+	
+	rl.on('line', (lineString) => {
+		console.log("[file read] " + lineString);
+	});
+
+	rl.on('close', () => {
+		console.log("file read END!");
+	});
+}
+
+// ログをファイル書き込み
+function writeLog()
+{
+	const options = {
+		flags: "a"  // 追加書き込みモード
+	};
+	var playerList = "";
+	for (let i = 0; i < players.length; i++) {
+		if (i > 0) {
+			playerList = playerList + ", ";
+		}
+		playerList = playerList + players[i].name;
+	}
+	var writeData = [
+		(game.turn).toString() + "\n",
+		game.theme + "\n",
+		fieldCards[FIELD_UPPER] + "\n",
+		fieldCards[FIELD_MIDDLE] + "\n",
+		fieldCards[FIELD_BOTTOM] + "\n",
+		playerList + "\n"
+	];
+	
+	const stream = fs.createWriteStream(filepathLogWrite, options);
+	for (let i = 0; i < 6; i++) {
+		stream.write(writeData[i]);
+	}
+	stream.end();
+
+	// エラー処理
+	stream.on("error", (err)=>{
+		if (err) {
+			console.log(err.message);
+		}
+	});
+}
+
+// ログファイル名生成
+function genLogFilePath()
+{
+	filepathLogWrite = dirLogFiles + 'log_' + getDateCode() + '.txt';
+}
+
+// 日時コード取得
+function getDateCode()
+{
+	const date_now = new Date();
+	const date_code = (date_now.getFullYear()).toString() + 
+						('00' + (date_now.getMonth()+1)).slice(-2) + 
+						('00' +  date_now.getDate()).slice(-2) + 
+						('00' +  date_now.getHours()).slice(-2) + 
+						('00' +  date_now.getMinutes()).slice(-2);
+	
+	return date_code;
+}
+
+// 日付、時間の記号を挿入する
+function strInsSymbol(str)
+{
+	var res = str.substr(0, 4) + '/' + str.substr(4, 2) + '/' + str.substr(6, 2) + '[' + str.substr(8, 2) + ':' + str.substr(10, 2) + ']';
+	return res;
+};

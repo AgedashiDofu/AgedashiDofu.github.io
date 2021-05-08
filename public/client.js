@@ -52,6 +52,7 @@ window.onload = function(){
 	preloadImage();			// 画像ファイルプリロード
 	cancelSelCard();		// 手札選択状態の初期化
 	checkPlayers();			// ルーム内プレイヤー数の確認
+	checkLog();				// 過去ログの確認
 	
 	myStage = AT_ENTRANCE;
 	myHandlingCards = 0;
@@ -74,7 +75,7 @@ socket.on('fluctuation_player', function(players)
 {
 	if (myStage == AT_CARD_MAKING ||
 		myStage == AT_PLAYING) {
-		generatTable(players);			// プレイヤーリスト更新
+		genPlayersTable(players);					// プレイヤーリスト更新
 	}
 	if (myStage == AT_ENTRANCE) {
 		checkPlayers();
@@ -154,7 +155,7 @@ socket.on('disp_game', function(game, num_of_deck, fieldCards, players)
 				 game.rule.fieldCards,
 				 num_of_deck);
 
-	generatTable(players);				// プレイヤーリスト更新
+	genPlayersTable(players);			// プレイヤーリスト更新
 	
 	updateHandlingCards();				// 手札再描画
 });
@@ -177,7 +178,7 @@ function reqCardToField(now_select, selectCard)
 // サーバから手札提出要求成功を受信
 socket.on('success_card_to_field', function(players)
 {
-	generatTable(players);				// プレイヤーリスト更新
+	genPlayersTable(players);			// プレイヤーリスト更新
 	cancelSelCard();					// 手札選択解除
 	updateHandlingCards();				// 手札再描画
 	updateFields();						// 場再描画
@@ -204,7 +205,7 @@ socket.on('fields_information', function(ruleFieldCards, fieldCards)
 // 手札数と、場のカード変更通知を受信
 socket.on('fluctuation_cards', function(players)
 {
-	generatTable(players);				// プレイヤーリスト更新
+	genPlayersTable(players);			// プレイヤーリスト更新
 	updateFields();						// 場再描画
 });
 
@@ -219,7 +220,7 @@ socket.on('success_draw', function(num_of_deck, players)
 {
 	updateHandlingCards();					// 手札更新
 	updateNumOfDeck(num_of_deck);			// 山札枚数更新
-	generatTable(players);					// プレイヤーリスト更新
+	genPlayersTable(players);				// プレイヤーリスト更新
 });
 
 // クライアントがお題入力ボタン押下
@@ -323,7 +324,7 @@ socket.on('disp_card_making', function(players, game, num_of_deck)
 		document.getElementById('viewPlayersTable').style.display = 'block';
 		document.getElementById('viewCardMaking').style.display = 'block';
 		document.getElementById('viewRuleSetting').style.display = 'block';
-		generatTable(players);				// プレイヤーリスト更新
+		genPlayersTable(players);					// プレイヤーリスト更新
 		
 		// フォーム表示
 		document.getElementById("selectHandleCards").value = game.rule.handlingCards;
@@ -347,8 +348,8 @@ socket.on('return_players', function(num_of_players)
 	}
 });
 
-// [関数]テーブル作成
-function generatTable(players)
+// [関数]プレイヤーテーブル作成
+function genPlayersTable(players)
 {
 	var elem = document.getElementById('tablePlayers');
 	let elem_old = document.getElementById('tablePlayersData');
@@ -449,3 +450,67 @@ function getMyHandCards()
 {
 	return myHandlingCards;
 }
+
+// [関数]過去ログテーブル作成
+function genLogTable(list_log_date)
+{
+	var elem = document.getElementById('tableLog');
+	let elem_old = document.getElementById('tableLogData');
+	if (elem_old != null) {
+		elem.removeChild(elem_old);
+	}
+	var tbl = document.createElement("table");
+	tbl.setAttribute("id", 'tableLogData');
+	var tblBody = document.createElement("tbody");
+	var row = document.createElement("tr");
+	var cell = document.createElement("td");
+	var cellText = document.createTextNode("過去のゲームの記録");
+	cell.setAttribute("bgcolor", "dodgerblue");
+	cell.setAttribute("style", "color:white");
+	cell.appendChild(cellText);
+	row.appendChild(cell);
+	tblBody.appendChild(row);
+	tbl.appendChild(tblBody);
+
+	tblBody = document.createElement("tbody");
+	if (list_log_date.length != 0) {
+		for (let i = 0; i < list_log_date.length; i++) {
+			row = document.createElement("tr");
+			cell = document.createElement("td");
+			cellText = document.createTextNode(list_log_date[i]);
+			cell.setAttribute("bgcolor", "white");
+			cell.appendChild(cellText);
+			row.appendChild(cell);
+			tblBody.appendChild(row);
+		}
+	}
+	else {
+		row = document.createElement("tr");
+		cell = document.createElement("td");
+		cellText = document.createTextNode("記録なし");
+		cell.setAttribute("bgcolor", "white");
+		cell.appendChild(cellText);
+		row.appendChild(cell);
+		tblBody.appendChild(row);
+	}
+
+	tbl.appendChild(tblBody);
+	elem.appendChild(tbl);
+	tbl.setAttribute("rules", "none");
+	tbl.setAttribute("border", "2");
+	tbl.setAttribute("cellpadding", "4");
+}
+
+// [関数]過去ログの確認
+function checkLog()
+{
+	if (myStage == AT_ENTRANCE) {
+		socket.emit('req_logs');			// サーバへ過去ログ確認申請
+	}
+}
+
+// サーバから過去ログ確認申請の応答を受信
+socket.on('return_logs', function(list_log_date)
+{
+	genLogTable(list_log_date);				// 過去ログ日付リストテーブル生成
+});
