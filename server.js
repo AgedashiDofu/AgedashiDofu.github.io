@@ -479,7 +479,7 @@ function writeLogFile()
 	// エラー処理
 	stream.on("error", (err)=>{
 		if (err) {
-			console.log(err.message);
+			console.log("[write log file] " + err.message);
 		}
 	});
 }
@@ -488,6 +488,7 @@ function writeLogFile()
 function genLogFilePath()
 {
 	filepathLogWrite = dirLogFiles + 'log_' + getDateCode() + '.html';
+	console.log("filepathLogWrite: " + filepathLogWrite);
 }
 
 // 日時コード取得
