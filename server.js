@@ -65,6 +65,7 @@ var stage = AT_CARD_MAKING;
 var listLoggingData = new Array();	// ロギングデータのリスト
 var dirLogFiles = __dirname + '/public/log/';
 var filepathLogWrite = dirLogFiles + 'log.html';	// ログファイルのパス（＋ファイル名）
+var urlLogWrite = './log/'			// ログファイルのURL
 var listLog;						// 過去ログ一覧（ファイル名一覧＋日付一覧）
 
 // ==== 関数 ====
@@ -415,10 +416,10 @@ function searchLogFile()
 //	console.log("All file list: " + list_all_fname);
 	
 	for (let i = 0; i < list_all_fname.length; i++) {
-		if ((list_all_fname[i].length == 21) &&				// ファイル名21文字一致確認
-			(list_all_fname[i].substr(0, 4) == "log_") && 	// フォーマット一致確認「log_」
-			(list_all_fname[i].substr(-5) == ".html")) {	// 拡張子一致確認「.html」
-			list_fname.push(dirLogFiles + list_all_fname[i]);
+		if ((list_all_fname[i].length == 21) &&					// ファイル名21文字一致確認
+			(list_all_fname[i].substr(0, 4) == "log_") && 		// フォーマット一致確認「log_」
+			(list_all_fname[i].substr(-5) == ".html")) {		// 拡張子一致確認「.html」
+			list_fname.push(urlLogWrite + list_all_fname[i]);	// ファイル名にURLを付加
 			let date_in_filename = list_all_fname[i].substr(4, (list_all_fname[i].length - 9));	// 日付抜き出し
 			let date_with_synbol = strInsSymbol(date_in_filename);		// 日付に"/"や":"を付加
 			list_log_date.push(date_with_synbol);
