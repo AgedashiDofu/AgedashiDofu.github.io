@@ -63,7 +63,7 @@ var stage = AT_CARD_MAKING;
 
 // ---- ログ ----
 var listLoggingData = new Array();	// ロギングデータのリスト
-var dirLogFiles = __dirname + '/public/log/';
+var dirLogFiles = __dirname + '/log/';
 var filepathLogWrite = dirLogFiles + 'log.html';	// ログファイルのパス（＋ファイル名）
 var listLog;						// 過去ログ一覧（ファイル名一覧＋日付一覧）
 
