@@ -457,6 +457,8 @@ function loggingTurnInfo()
 // ログファイル（html）作成
 function writeLogFile()
 {
+	console.log("[write log file] Logging data length : " + listLoggingData.length);
+	
 	if (listLoggingData.length == 0) {			// ロギングデータがないとき
 		return;									// ログファイルは作成しない
 	}
@@ -488,6 +490,7 @@ function writeLogFile()
 	
 	// 完了処理
 	stream.on('finish', () => {
+		console.log("[write log file] Complete! Delete logging data.");
 		listLoggingData.splice(0);				// ロギングデータ削除
 	});
 }
