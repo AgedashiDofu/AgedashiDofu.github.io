@@ -458,6 +458,10 @@ function loggingTurnInfo()
 // ログファイル（html）作成
 function writeLogFile()
 {
+	if (listLoggingData.length == 0) {			// ロギングデータがないとき
+		return;									// ログファイルは作成しない
+	}
+	
 	const css_str = '<link href="log.css" rel="stylesheet" type="text/css">'
 	const options = {
 		flags: "a",  		// 追加書き込みモード
