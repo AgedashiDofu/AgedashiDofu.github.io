@@ -400,7 +400,6 @@ function resetGame()
 	removeCardAllFields();									// 場をクリア
 	deckCards.splice(0);									// 山札クリア
 	stage = AT_CARD_MAKING;									// 手札作成ステージ
-	listLoggingData.splice(0);								// ロギングデータ削除
 }
 
 // ログファイルを検索
@@ -485,6 +484,11 @@ function writeLogFile()
 		if (err) {
 			console.log("[write log file] " + err.message);
 		}
+	});
+	
+	// 完了処理
+	stream.on('finish', () => {
+		listLoggingData.splice(0);				// ロギングデータ削除
 	});
 }
 
