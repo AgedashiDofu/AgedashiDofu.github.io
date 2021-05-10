@@ -41,7 +41,6 @@ var socket = io();
 
 // ---- 自プレイヤー情報 ----
 var myStage = AT_ENTRANCE;				// ステージ
-var myFrameColor;						// 枠の色
 var myHandlingCards = 0;				// 手札の数
 
 
@@ -140,8 +139,12 @@ socket.on('disp_game', function(game, num_of_deck, fieldCards, players)
 	else  {
 		document.getElementById('viewEntrance').style.display = 'none';
 		document.getElementById('viewCaution').style.display = 'none';
+		document.getElementById('viewListLog').style.display = 'none';
 		document.getElementById('viewPlayersTable').style.display = 'block';
 		document.getElementById('viewRuleSetting').style.display = 'block';
+		
+		document.getElementById('idTitleImg').width  = '200';
+		document.getElementById('idTitleImg').height = '35';
 	}
 	document.getElementById('viewTurn').style.display = 'block';
 	document.getElementById('viewInputTheme').style.display = 'block';
@@ -163,7 +166,6 @@ socket.on('disp_game', function(game, num_of_deck, fieldCards, players)
 // サーバからプレイヤー情報を受信
 socket.on('player_information', function(ruleHandlingCards, player)
 {
-	myFrameColor = player.color_line;
 	myHandlingCards = player.handlingCards.length;
 	
 	drawAllHandlingCards(player.handlingCards, ruleHandlingCards);	// 全手札の描画
@@ -321,6 +323,7 @@ socket.on('disp_card_making', function(players, game, num_of_deck)
 		myStage = AT_CARD_MAKING;
 		document.getElementById('viewEntrance').style.display = 'none';
 		document.getElementById('viewCaution').style.display = 'none';
+		document.getElementById('viewListLog').style.display = 'none';
 		document.getElementById('viewPlayersTable').style.display = 'block';
 		document.getElementById('viewCardMaking').style.display = 'block';
 		document.getElementById('viewRuleSetting').style.display = 'block';
@@ -331,6 +334,9 @@ socket.on('disp_card_making', function(players, game, num_of_deck)
 		document.getElementById("selectFields").value = game.rule.fieldCards;
 		document.getElementById('textTurn').innerHTML = game.turn;
 		document.getElementById('textCardsOfDeck').innerHTML = num_of_deck;
+
+		document.getElementById('idTitleImg').width  = '200';
+		document.getElementById('idTitleImg').height = '35';
 	}
 });
 
@@ -378,7 +384,6 @@ function genPlayersTable(players)
 			if (j == 0) {
 				cellText = document.createTextNode(players[i].name);
 				cell.setAttribute("bgcolor", players[i].color_back);
-//				cell.setAttribute("bgcolor", players[i].color_line);
 			}
 			else {
 				if (myStage == AT_PLAYING) {
@@ -461,18 +466,7 @@ function genLogTable(list_log)
 	}
 	var tbl = document.createElement("table");
 	tbl.setAttribute("id", 'tableLogData');
-	var tblBody = document.createElement("tbody");
-	var row = document.createElement("tr");
-	var cell = document.createElement("td");
-	var cellText = document.createTextNode("過去のゲームの記録");
-	cell.setAttribute("bgcolor", "dodgerblue");
-	cell.setAttribute("style", "color:white");
-	cell.appendChild(cellText);
-	row.appendChild(cell);
-	tblBody.appendChild(row);
-	tbl.appendChild(tblBody);
-
-	tblBody = document.createElement("tbody");
+	
 	if (list_log.file_list.length != 0) {
 		for (let i = 0; i < list_log.file_list.length; i++) {
 			row = document.createElement("tr");
@@ -485,7 +479,7 @@ function genLogTable(list_log)
 			cell.appendChild(elem_a);
 			cell.setAttribute("bgcolor", "white");
 			row.appendChild(cell);
-			tblBody.appendChild(row);
+			tbl.appendChild(row);
 		}
 	}
 	else {
@@ -495,14 +489,15 @@ function genLogTable(list_log)
 		cell.setAttribute("bgcolor", "white");
 		cell.appendChild(cellText);
 		row.appendChild(cell);
-		tblBody.appendChild(row);
+		tbl.appendChild(row);
 	}
 
-	tbl.appendChild(tblBody);
-	elem.appendChild(tbl);
 	tbl.setAttribute("rules", "none");
-	tbl.setAttribute("border", "2");
 	tbl.setAttribute("cellpadding", "4");
+	tbl.setAttribute("border", "2");
+	tbl.setAttribute("bordercolor", "black");
+	tbl.setAttribute("style", "display: block; width: 300px; height: 180px; overflow-y: scroll; border-collapse: collapse; border-style: solid;");
+	elem.appendChild(tbl);
 }
 
 // [関数]過去ログの確認

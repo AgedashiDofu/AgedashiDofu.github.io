@@ -25,21 +25,22 @@ server.listen(
 io.attach(server);
 
 // ==== 定数 ====
-const OK = 1;
-const NG = 0;
+const OK  = 1;
+const NG  = 0;
+const YES = 1;
+const NO  = 0;
 const MAX_USER = 7;					// 最大プレイヤー
-const AT_ENTRANCE    = 0;			// プレイヤーの場所：入口
-const AT_CARD_MAKING = 1;			// プレイヤーの場所：手札作成
-const AT_PLAYING     = 2;			// プレイヤーの場所：ゲーム中
+const MAX_LOG_FILE = 100;			// 最大保持ログファイル
+// ---- 場の位置 ----
 const FIELD_UPPER  = 0;				// 上の句
 const FIELD_MIDDLE = 1;				// 中の句
 const FIELD_BOTTOM = 2;				// 下の句
-const ID_NO_USE = 0;				// ID未使用
-const ID_USED   = 1;				// ID使用済み
+// ---- 通常メッセージ ----
 const MSG_Q_START_GAME  = 0;
 const MSG_Q_NEW_THEME   = 1;
 const MSG_Q_NEXT_TURN   = 2;
 const MSG_COMP_CHG_RULE = 3;
+// ---- エラーメッセージ -----
 const E_ROOM_MAX       = 0;			// E-00
 const E_NO_USERNAME    = 1;			// E-01
 const E_BLANK_CARD     = 2;			// E-02
@@ -47,32 +48,33 @@ const E_FULL_HANDLINGS = 3;			// E-03
 const E_EMPTY_DECK     = 4;			// E-04
 const E_CANT_CHG_RULE_HAND  = 5;	// E-05
 const E_CANT_CHG_RULE_FIELD = 6;	// E-06
-const PLAYER_LINE_COLOR = ["red",    "blue",        "yellow",       "green",          "purple",        "greenyellow", "magenta"];
+// ---- プレイヤー配色 ----
 const PLAYER_BACK_COLOR = ["coral", "lightskyblue", "lemonchiffon", "mediumseagreen", "mediumorchid",  "yellowgreen", "plum"   ];
 
 // ==== 変数 ====
-var deckCards = new Array();		// 山札
-var fieldCards = [ "", "", "" ];	// 場札
-var players   = new Array();		// プレイヤー
+// ---- ゲーム管理 ----
+var deckCards = new Array();					// 山札
+var fieldCards = [ "", "", "" ];				// 場札
+var players   = new Array();					// プレイヤー
 var game = {
 	turn: 1,									// ターン
 	rule: {"handlingCards":5, "fieldCards": 3},	// ルール
 	theme: "",									// お題
 };
-var stage = AT_CARD_MAKING;
+var isStartGame = NO;							// ゲーム未開始
 
 // ---- ログ ----
-var listLoggingData = new Array();	// ロギングデータのリスト
+var listLoggingData = new Array();				// ロギングデータのリスト
 var dirLogFiles = __dirname + '/public/log/';
 var filepathLogWrite = dirLogFiles + 'log.html';	// ログファイルのパス（＋ファイル名）
-var urlLogWrite = './log/'			// ログファイルのURL
-var listLog;						// 過去ログ一覧（ファイル名一覧＋日付一覧）
+var urlLogWrite = './log/'						// ログファイルのURL
+var listLog;									// 過去ログ一覧（ファイル名一覧＋日付一覧）
 
 // ==== 関数 ====
 // 接続確立時の処理
 io.sockets.on('connection', function(socket) {
 	console.log("connect");
-	listLog = searchLogFile();								// ログファイル一覧取得
+	listLog = searchLogFile();					// ログファイル一覧取得
 	
 	// 接続切断処理
 	socket.on('disconnect', function() {
@@ -118,13 +120,10 @@ io.sockets.on('connection', function(socket) {
 					"id":id,							// ID（カラーリング用）
 					"socket_id":socket.id,
 					"name":userName,					// 名前
-					"color_line":PLAYER_LINE_COLOR[id],	// 枠の色
 					"color_back":PLAYER_BACK_COLOR[id],	// リストの色
-					"at":AT_CARD_MAKING,				// プレイヤーの位置
 				};
 				player.handlingCards = new Array();		// 手札
 				players.push(player);					// プレイヤー追加
-				console.log("players: " + players.length);
 				console.log(player);
 
 				socket.join('room');
@@ -132,7 +131,7 @@ io.sockets.on('connection', function(socket) {
 				socket.broadcast.emit('fluctuation_player', players);	// 他のプレイヤーへ通知
 				
 				
-				if (stage != AT_PLAYING)  {				// ゲームはまだ開始していないとき
+				if (isStartGame == NO)  {				// ゲームはまだ開始していないとき
 					io.to(socket.id).emit('disp_card_making', players, game, deckCards.length);	// 手札作成画面表示
 				}
 				else {									// ゲームがすでに始まっているとき
@@ -158,7 +157,6 @@ io.sockets.on('connection', function(socket) {
 
 	// 手札を山札へ追加申請を受信
 	socket.on('req_card_to_deck', function(addCard) {
-		console.log("add card: " + addCard);
 		deckCards.push(addCard);
 		io.to('room').emit('fluctuation_deck', deckCards.length);					// ルームメンバーへ共有
 	});
@@ -337,7 +335,7 @@ function initGameSystem()
 	genLogFilePath();							// ログファイル名を生成
 	shuffleDeckCards();							// 山札をシャッフル
 	handOutCards();								// 山札から各プレイヤーへ配る
-	stage = AT_PLAYING;							// ゲームステージ
+	isStartGame = YES;							// ゲーム開始
 }
 
 // 山札をシャッフル
@@ -400,7 +398,7 @@ function resetGame()
 	game.theme = "";										// お題クリア
 	removeCardAllFields();									// 場をクリア
 	deckCards.splice(0);									// 山札クリア
-	stage = AT_CARD_MAKING;									// 手札作成ステージ
+	isStartGame = NO;										// ゲーム未開始
 }
 
 // ログファイルを検索
@@ -409,12 +407,14 @@ function searchLogFile()
 	var list_log_date = new Array();
 	var list_fname = new Array();
 	var return_obj = new Object();
+	var list_del_file = new Array();
+	
+	// ログファイルディレクトリにあるファイルの一覧を取得
 	const allDirents = fs.readdirSync(dirLogFiles, { withFileTypes: true });
-	
 	const list_all_fname = allDirents.filter(dirent => dirent.isFile()).map(({ name }) => name);
+	list_all_fname.reverse();									// ファイル名リストを新しい順に並び変える
 	
-//	console.log("All file list: " + list_all_fname);
-	
+	// ログファイルのファイル名のリストと、日付リストを作成
 	for (let i = 0; i < list_all_fname.length; i++) {
 		if ((list_all_fname[i].length == 21) &&					// ファイル名21文字一致確認
 			(list_all_fname[i].substr(0, 4) == "log_") && 		// フォーマット一致確認「log_」
@@ -425,9 +425,24 @@ function searchLogFile()
 			list_log_date.push(date_with_synbol);
 		}
 	}
-//	console.log("File list: " + list_fname);
-//	console.log("Date list: " + list_log_date);
 	
+	// 保存しているログファイルの数が最大を超えたときは、古いファイルから削除
+	if (list_fname.length > MAX_LOG_FILE) {
+		list_del_file = list_fname.splice(MAX_LOG_FILE, list_fname.length - MAX_LOG_FILE);
+		list_log_date.splice(MAX_LOG_FILE, list_log_date.length - MAX_LOG_FILE);
+	
+	}
+	for (let i = 0; i < list_del_file.length; i++) {
+		let del_file_path = dirLogFiles + list_del_file[i].substr(6);	// 余分な部分"./log/"を削除
+		console.log("Log file delete: " + del_file_path);
+		fs.unlink(del_file_path, function (err) {				// ログファイルを削除
+			if (err) {
+				console.log("[file delete] error");
+			}
+		});
+	}
+	
+	// 作成したリストを返す
 	return_obj.file_list = list_fname;						// ログファイルのファイル名のリスト
 	return_obj.date_list  = list_log_date;					// ログファイルの日付リスト
 	
@@ -458,8 +473,6 @@ function loggingTurnInfo()
 // ログファイル（html）作成
 function writeLogFile()
 {
-	console.log("[write log file] Logging data length : " + listLoggingData.length);
-	
 	if (listLoggingData.length == 0) {			// ロギングデータがないとき
 		return;									// ログファイルは作成しない
 	}
@@ -475,7 +488,7 @@ function writeLogFile()
 	for (let i = 0; i < listLoggingData.length; i++) {
 		stream.write("<tr>");
 		for (let j = 0; j < 6; j++) {
-			stream.write("<td>" + listLoggingData[i][j]) + "</td>";
+			stream.write("<td>" + listLoggingData[i][j] + "</td>");
 		}
 		stream.write("</tr>\n");
 	}
@@ -485,13 +498,12 @@ function writeLogFile()
 	// エラー処理
 	stream.on("error", (err)=>{
 		if (err) {
-			console.log("[write log file] " + err.message);
+			console.log("[write log file] error: " + err.message);
 		}
 	});
 	
 	// 完了処理
 	stream.on('finish', () => {
-		console.log("[write log file] Complete! Delete logging data.");
 		listLoggingData.splice(0);				// ロギングデータ削除
 	});
 }
@@ -500,7 +512,6 @@ function writeLogFile()
 function genLogFilePath()
 {
 	filepathLogWrite = dirLogFiles + 'log_' + getDateCode() + '.html';
-	console.log("filepathLogWrite: " + filepathLogWrite);
 }
 
 // 日時コード取得
@@ -519,6 +530,6 @@ function getDateCode()
 // 日付、時間の記号を挿入する
 function strInsSymbol(str)
 {
-	var res = str.substr(0, 4) + '/' + str.substr(4, 2) + '/' + str.substr(6, 2) + '[' + str.substr(8, 2) + ':' + str.substr(10, 2) + ']';
+	var res = '[日付] ' + str.substr(0, 4) + '/' + str.substr(4, 2) + '/' + str.substr(6, 2) + '  [時刻] ' + str.substr(8, 2) + ':' + str.substr(10, 2);
 	return res;
 };
