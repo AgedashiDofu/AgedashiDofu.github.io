@@ -11,7 +11,9 @@ const roomMode = "sfu";
 	const localText = document.getElementById('js-local-text');
 	const sendTrigger = document.getElementById('js-send-trigger');
 	const messages = document.getElementById('js-messages');
-
+	const videoOnOffTrigger = document.getElementById('js-sel-radio-video');
+	const audioOnOffTrigger = document.getElementById('js-sel-radio-audio');
+	
 	let constraints = {
 		video: {},
 		audio: true
@@ -40,7 +42,17 @@ const roomMode = "sfu";
 		key: window.__SKYWAY_KEY__,
 		debug: 3,
 	}));
-
+	
+	// 映像ON/OFFラジオボタン選択
+	videoOnOffTrigger.addEventListener('change', () => {
+		console.log(videoOnOffTrigger.group.value);
+	});
+	
+	// 音声ON/OFFラジオボタン選択
+	audioOnOffTrigger.addEventListener('change', () => {
+		console.log(audioOnOffTrigger.group.value);
+	});
+	
 	// トークルームに入るボタンクリック
 	joinTrigger.addEventListener('click', () => {
 		// Note that you need to ensure the peer has connected to signaling server
