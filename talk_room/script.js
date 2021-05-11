@@ -12,11 +12,25 @@ const roomMode = "sfu";
 	const sendTrigger = document.getElementById('js-send-trigger');
 	const messages = document.getElementById('js-messages');
 
+	let constraints = {
+		video: {},
+		audio: true
+	};
+	constraints.video.width = {
+	    min: 320,
+	    max: 320
+	};
+	constraints.video.height = {
+	    min: 240,
+	    max: 240
+	};
+	
 	const localStream = await navigator.mediaDevices
-		.getUserMedia({
-			audio: true,
-			video: true,
-		})
+		.getUserMedia(constraints)
+//		.getUserMedia({
+//			audio: true,
+//			video: true,
+//		})
 		.catch(console.error);
 
 	// Render local stream
