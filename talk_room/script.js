@@ -12,69 +12,35 @@ const roomMode = "sfu";
 	const sendTrigger = document.getElementById('js-send-trigger');
 	const messages = document.getElementById('js-messages');
 
-	let audioSelect = $('#audioSource');
-	let videoSelect = $('#videoSource');
-	let localStream = NULL;
-
-	navigator.mediaDevices.enumerateDevices()
-	.then(function(deviceInfos) {
-		for (let i = 0; i !== deviceInfos.length; ++i) {
-			let deviceInfo = deviceInfos[i];
-			let option = $('<option>');
-			option.val(deviceInfo.deviceId);
-			if (deviceInfo.kind === 'audioinput') {
-				option.text(deviceInfo.label);
-				audioSelect.append(option);
-			} else if (deviceInfo.kind === 'videoinput') {
-				option.text(deviceInfo.label);
-				videoSelect.append(option);
-			}
-		}
-		videoSelect.on('change', setupGetUserMedia);
-		audioSelect.on('change', setupGetUserMedia);
-		setupGetUserMedia();
-	}).catch(function (error) {
-		console.error('mediaDevices.enumerateDevices() error:', error);
-		return;
-	});
+	let constraints = {
+		video: {},
+		audio: true
+	};
+	constraints.video.width = {
+	    min: 320,
+	    max: 320
+	};
+	constraints.video.height = {
+	    min: 240,
+	    max: 240
+	};
 	
-	function setupGetUserMedia() {
-		let audioSource = $('#audioSource').val();
-		let videoSource = $('#videoSource').val();
-		let constraints = {
-			audio: {deviceId: {exact: audioSource}},
-			video: {deviceId: {exact: videoSource}}
-		};
-		constraints.video.width = {
-			min: 320,
-			max: 320
-		};
-		constraints.video.height = {
-			min: 240,
-			max: 240
-		};
+	const localStream = await navigator.mediaDevices
+		.getUserMedia(constraints)
+		.catch(console.error);
 
-		if(localStream){
-			localStream = null;
-		}
+	// Render local stream
+	localVideo.muted = true;
+	localVideo.srcObject = localStream;
+	localVideo.playsInline = true;
+	await localVideo.play().catch(console.error);
 
-		localStream = await navigator.mediaDevices
-			.getUserMedia(constraints)
-			.catch(console.error);
-
-		// Render local stream
-		localVideo.muted = true;
-		localVideo.srcObject = localStream;
-		localVideo.playsInline = true;
-		await localVideo.play().catch(console.error);
-	}
-	
 	// eslint-disable-next-line require-atomic-updates
 	const peer = (window.peer = new Peer({
 		key: window.__SKYWAY_KEY__,
 		debug: 3,
 	}));
-	
+
 	// トークルームに入るボタンクリック
 	joinTrigger.addEventListener('click', () => {
 		// Note that you need to ensure the peer has connected to signaling server
