@@ -59,10 +59,10 @@ const Peer = window.Peer;
     });
 
     room.once('open', () => {
-      messages.textContent += '=== 部屋に入ったよ ===\n';
+      messages.textContent += '==== 部屋に入ったよ ====\n';
     });
     room.on('peerJoin', peerId => {
-      messages.textContent += `=== ${peerId} joined ===\n`;
+      messages.textContent += '==== 誰か部屋に来たよ ====\n';
     });
 
     // Render remote stream for new peer join in the room
@@ -90,13 +90,13 @@ const Peer = window.Peer;
       remoteVideo.srcObject = null;
       remoteVideo.remove();
 
-      messages.textContent += `=== ${peerId} left ===\n`;
+      messages.textContent += '==== 誰かが部屋を出たよ ====\n';
     });
 
     // for closing myself
     room.once('close', () => {
       sendTrigger.removeEventListener('click', onClickSend);
-      messages.textContent += '== 部屋を出たよ ===\n';
+      messages.textContent += '==== 部屋を出たよ ====\n';
       Array.from(remoteVideos.children).forEach(remoteVideo => {
         remoteVideo.srcObject.getTracks().forEach(track => track.stop());
         remoteVideo.srcObject = null;
