@@ -8,7 +8,6 @@ const roomMode = "sfu";
 	const joinTrigger = document.getElementById('js-join-trigger');
 	const leaveTrigger = document.getElementById('js-leave-trigger');
 	const remoteVideos = document.getElementById('js-remote-streams');
-	const roomMode = document.getElementById('js-room-mode');
 	const localText = document.getElementById('js-local-text');
 	const sendTrigger = document.getElementById('js-send-trigger');
 	const messages = document.getElementById('js-messages');
@@ -19,14 +18,6 @@ const roomMode = "sfu";
 		UA: ${navigator.userAgent}
 		SDK: ${sdkSrc ? sdkSrc.src : 'unknown'}
 	`.trim();
-
-//  const getRoomModeByHash = () => (location.hash === '#sfu' ? 'sfu' : 'mesh');
-
-//  roomMode.textContent = getRoomModeByHash();
-//  window.addEventListener(
-//    'hashchange',
-//    () => (roomMode.textContent = getRoomModeByHash())
-//  );
 
 	const localStream = await navigator.mediaDevices
 		.getUserMedia({
@@ -56,7 +47,6 @@ const roomMode = "sfu";
 		}
 
 		const room = peer.joinRoom(roomId, {
-//			mode: getRoomModeByHash(),
 			mode: roomMode,
 			stream: localStream,
 		});
@@ -81,7 +71,8 @@ const roomMode = "sfu";
 
 		room.on('data', ({ data, src }) => {
 			// Show a message sent to the room and who sent
-			messages.textContent += `${src}: ${data}\n`;
+//			messages.textContent += `${src}: ${data}\n`;
+			messages.textContent += `${data}\n`;
 		});
 
 		// for closing room members
