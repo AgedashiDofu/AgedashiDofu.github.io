@@ -45,7 +45,7 @@ const Peer = window.Peer;
     debug: 3,
   }));
 
-  // Register join handler
+  // トークルームに入るボタンクリック
   joinTrigger.addEventListener('click', () => {
     // Note that you need to ensure the peer has connected to signaling server
     // before using methods of peer instance.
@@ -59,7 +59,7 @@ const Peer = window.Peer;
     });
 
     room.once('open', () => {
-      messages.textContent += '=== You joined ===\n';
+      messages.textContent += '=== 部屋に入ったよ ===\n';
     });
     room.on('peerJoin', peerId => {
       messages.textContent += `=== ${peerId} joined ===\n`;
@@ -96,7 +96,7 @@ const Peer = window.Peer;
     // for closing myself
     room.once('close', () => {
       sendTrigger.removeEventListener('click', onClickSend);
-      messages.textContent += '== You left ===\n';
+      messages.textContent += '== 部屋を出たよ ===\n';
       Array.from(remoteVideos.children).forEach(remoteVideo => {
         remoteVideo.srcObject.getTracks().forEach(track => track.stop());
         remoteVideo.srcObject = null;
@@ -104,7 +104,10 @@ const Peer = window.Peer;
       });
     });
 
+  	// チャットを送信ボタンクリック
     sendTrigger.addEventListener('click', onClickSend);
+  	
+  	// トークルームを出るボタンクリック
     leaveTrigger.addEventListener('click', () => room.close(), { once: true });
 
     function onClickSend() {
