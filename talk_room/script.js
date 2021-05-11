@@ -11,13 +11,6 @@ const roomMode = "sfu";
 	const localText = document.getElementById('js-local-text');
 	const sendTrigger = document.getElementById('js-send-trigger');
 	const messages = document.getElementById('js-messages');
-//	const meta = document.getElementById('js-meta');
-//	const sdkSrc = document.querySelector('script[src*=skyway]');
-
-//	meta.innerText = `
-//		UA: ${navigator.userAgent}
-//		SDK: ${sdkSrc ? sdkSrc.src : 'unknown'}
-//	`.trim();
 
 	const localStream = await navigator.mediaDevices
 		.getUserMedia({
@@ -71,7 +64,6 @@ const roomMode = "sfu";
 
 		room.on('data', ({ data, src }) => {
 			// Show a message sent to the room and who sent
-//			messages.textContent += `${src}: ${data}\n`;
 			messages.textContent += `${data}\n`;
 		});
 
