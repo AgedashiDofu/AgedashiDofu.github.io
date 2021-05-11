@@ -11,20 +11,20 @@ const roomMode = "sfu";
 	const localText = document.getElementById('js-local-text');
 	const sendTrigger = document.getElementById('js-send-trigger');
 	const messages = document.getElementById('js-messages');
-	const meta = document.getElementById('js-meta');
-	const sdkSrc = document.querySelector('script[src*=skyway]');
+//	const meta = document.getElementById('js-meta');
+//	const sdkSrc = document.querySelector('script[src*=skyway]');
 
-	meta.innerText = `
-		UA: ${navigator.userAgent}
-		SDK: ${sdkSrc ? sdkSrc.src : 'unknown'}
-	`.trim();
+//	meta.innerText = `
+//		UA: ${navigator.userAgent}
+//		SDK: ${sdkSrc ? sdkSrc.src : 'unknown'}
+//	`.trim();
 
 	const localStream = await navigator.mediaDevices
 		.getUserMedia({
 			audio: true,
 			video: true,
-	})
-	.catch(console.error);
+		})
+		.catch(console.error);
 
 	// Render local stream
 	localVideo.muted = true;
@@ -108,7 +108,7 @@ const roomMode = "sfu";
 			// Send message to all of the peers in the room via websocket
 			room.send(localText.value);
 
-			messages.textContent += `${peer.id}: ${localText.value}\n`;
+			messages.textContent += `${localText.value}\n`;
 			localText.value = '';
 		}
 	});
