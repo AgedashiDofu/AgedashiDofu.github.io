@@ -54,7 +54,7 @@ const roomId = "KamiToPenOnline";
       return;
     }
 
-    const room = peer.joinRoom(roomId.value, {
+    const room = peer.joinRoom(roomId, {
       mode: getRoomModeByHash(),
       stream: localStream,
     });
