@@ -45,12 +45,22 @@ const roomMode = "sfu";
 	
 	// 映像ON/OFFラジオボタン選択
 	videoOnOffTrigger.addEventListener('change', () => {
-		console.log(videoOnOffTrigger.group.value);
+		if (videoOnOffTrigger.group.value == "OFF") {
+			localStream.getVideoTracks().forEach((track) => (track.enabled = false));
+		}
+		else {
+			localStream.getVideoTracks().forEach((track) => (track.enabled = true));
+		}
 	});
 	
 	// 音声ON/OFFラジオボタン選択
 	audioOnOffTrigger.addEventListener('change', () => {
-		console.log(audioOnOffTrigger.group.value);
+		if (audioOnOffTrigger.group.value == "OFF") {
+			localStream.getAudioTracks().forEach((track) => (track.enabled = false));
+		}
+		else {
+			localStream.getAudioTracks().forEach((track) => (track.enabled = true));
+		}
 	});
 	
 	// トークルームに入るボタンクリック
