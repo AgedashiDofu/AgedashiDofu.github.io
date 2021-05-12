@@ -11,14 +11,18 @@
 			<img id="idTitleImg" src="./game/public/title.png"><img id="idTitleImg" src="./talk_room/talk_room.png">
 			<div class="room">
 			<div>
-				<form id="js-sel-radio-video">
-				映像：<input type="radio" name="group" value="ON" checked>オン
-						<input type="radio" name="group" value="OFF">オフ
-				</form>
-				<form id="js-sel-radio-audio">
-				音声：<input type="radio" name="group" value="ON" checked>オン
-						<input type="radio" name="group" value="OFF">オフ
-				</form>
+				<table><tr><td>
+					<form id="js-sel-radio-video">
+					映像：<span  style="background-color:cornflowerblue; color:black"><input type="radio" name="group" value="ON" checked>オン</span>
+						  <span  style="background-color:tomato; color:black"><input type="radio" name="group" value="OFF">オフ</span>
+					</form>
+				</td></tr></table>
+				<table><tr><td>
+					<form id="js-sel-radio-audio">
+					音声：<span  style="background-color:cornflowerblue; color:black"><input type="radio" name="group" value="ON" checked>オン</span>
+						  <span  style="background-color:tomato; color:black"><input type="radio" name="group" value="OFF">オフ</span>
+					</form>
+				</td></tr></table>
 				<video id="js-local-stream"></video>
 				</br>
 				<button id="js-join-trigger">トークルームに入る</button>
