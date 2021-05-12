@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Talk Room</title>
-    <link rel="stylesheet" href="./talk_room/style.css">
-  </head>
-  <body>
-    <div class="container">
-      <img id="idTitleImg" src="./game/public/title.png"><img id="idTitleImg" src="./talk_room/talk_room.png">
-      <div class="room">
-        <div>
-          <form id="js-sel-radio-video">
-            映像：<input type="radio" name="group" value="ON" checked>ON
-                  <input type="radio" name="group" value="OFF">OFF
-          </form>
-          <form id="js-sel-radio-audio">
-            音声：<input type="radio" name="group" value="ON" checked>ON
-                  <input type="radio" name="group" value="OFF">OFF
-          </form>
-          <video id="js-local-stream"></video>
-          </br>
-          <button id="js-join-trigger">トークルームに入る</button>
-          <button id="js-leave-trigger">トークルームを出る</button>
-        </div>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>KamiToPenOnline - Talk Room</title>
+		<link rel="stylesheet" href="./talk_room/style.css">
+	</head>
+	<body>
+		<div class="container">
+			<img id="idTitleImg" src="./game/public/title.png"><img id="idTitleImg" src="./talk_room/talk_room.png">
+			<div class="room">
+			<div>
+				<form id="js-sel-radio-video">
+				映像：<input type="radio" name="group" value="ON" checked>オン
+						<input type="radio" name="group" value="OFF">オフ
+				</form>
+				<form id="js-sel-radio-audio">
+				音声：<input type="radio" name="group" value="ON" checked>オン
+						<input type="radio" name="group" value="OFF">オフ
+				</form>
+				<video id="js-local-stream"></video>
+				</br>
+				<button id="js-join-trigger">トークルームに入る</button>
+				<button id="js-leave-trigger">トークルームを出る</button>
+			</div>
 
-        <div class="remote-streams" id="js-remote-streams"></div>
+			<div class="remote-streams" id="js-remote-streams"></div>
 
-        <div>
-          <pre class="messages" id="js-messages"></pre>
-          <input type="text" id="js-local-text">
-          <button id="js-send-trigger">チャットを送信</button>
-        </div>
-      </div>
-    </div>
-    <script src="//cdn.webrtc.ecl.ntt.com/skyway-4.4.1.js"></script>
-    <script src="./talk_room/key.js"></script>
-    <script src="./talk_room/script.js"></script>
-  </body>
+			<div>
+				<pre class="messages" id="js-messages"></pre>
+				<input type="text" id="js-local-text">
+				<button id="js-send-trigger">チャットを送信</button>
+			</div>
+			</div>
+		</div>
+		<script src="//cdn.webrtc.ecl.ntt.com/skyway-4.4.1.js"></script>
+		<script src="./talk_room/key.js"></script>
+		<script src="./talk_room/script.js"></script>
+	</body>
 </html>
