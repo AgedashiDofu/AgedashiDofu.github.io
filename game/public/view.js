@@ -82,10 +82,12 @@ var fieldTextRect = [
 // ---- 制御用定数 ----
 const ON  = 1;
 const OFF = 0;
+const H_CARD_NO_SEL = -1;			// 手札選択なし
+
+// ---- 場の位置 ----（server.jsと共通）
 const FIELD_UPPER  = 0;				// 上の句
 const FIELD_MIDDLE = 1;				// 中の句
 const FIELD_BOTTOM = 2;				// 下の句
-const H_CARD_NO_SEL = -1;			// 手札選択なし
 
 // ----- リミット -----
 const MAX_HANDLING_CARDS = 6;

@@ -29,23 +29,23 @@ const OK  = 1;
 const NG  = 0;
 const YES = 1;
 const NO  = 0;
-const MAX_USER = 7;					// 最大プレイヤー
+const MAX_USER = 7;					// 最大プレイヤー（client.jsと共通）
 const MAX_LOG_FILE = 100;			// 最大保持ログファイル
-// ---- 場の位置 ----
+// ---- 場の位置 ----（view.jsと共通）
 const FIELD_UPPER  = 0;				// 上の句
 const FIELD_MIDDLE = 1;				// 中の句
 const FIELD_BOTTOM = 2;				// 下の句
-// ---- 通常メッセージ ----
+// ---- 通常メッセージ ----（client.jsと共通）
 const MSG_Q_START_GAME  = 0;
 const MSG_Q_NEW_THEME   = 1;
 const MSG_Q_NEXT_TURN   = 2;
 const MSG_COMP_CHG_RULE = 3;
-// ---- エラーメッセージ -----
-const E_ROOM_MAX       = 0;			// E-00
-const E_NO_USERNAME    = 1;			// E-01
-const E_BLANK_CARD     = 2;			// E-02
-const E_FULL_HANDLINGS = 3;			// E-03
-const E_EMPTY_DECK     = 4;			// E-04
+// ---- エラーメッセージ -----（client.jsと共通）
+const E_ROOM_MAX            = 0;	// E-00
+const E_NO_USERNAME         = 1;	// E-01
+const E_BLANK_CARD          = 2;	// E-02
+const E_FULL_HANDLINGS      = 3;	// E-03
+const E_EMPTY_DECK          = 4;	// E-04
 const E_CANT_CHG_RULE_HAND  = 5;	// E-05
 const E_CANT_CHG_RULE_FIELD = 6;	// E-06
 // ---- プレイヤー配色 ----
@@ -65,7 +65,7 @@ var isStartGame = NO;							// ゲーム未開始
 
 // ---- ログ ----
 var listLoggingData = new Array();				// ロギングデータのリスト
-var dirLogFiles = __dirname + '/public/log/';
+var dirLogFiles = __dirname + '/public/log/';	// ログファイルのパス
 var filepathLogWrite = dirLogFiles + 'log.html';	// ログファイルのパス（＋ファイル名）
 var urlLogWrite = './log/'						// ログファイルのURL
 var listLog;									// 過去ログ一覧（ファイル名一覧＋日付一覧）
@@ -114,7 +114,7 @@ io.sockets.on('connection', function(socket) {
 		if (players.length < MAX_USER) {
 			var id = issueID();			// IDを発行
 			if (id != -1) {
-			
+				// ---- プレイヤー追加 -----
 				// プレイヤー情報生成
 				let player = {
 					"id":id,							// ID（カラーリング用）
@@ -125,12 +125,12 @@ io.sockets.on('connection', function(socket) {
 				player.handlingCards = new Array();		// 手札
 				players.push(player);					// プレイヤー追加
 				console.log(player);
-
-				socket.join('room');
+				
+				socket.join('room');					// ログイン
 				
 				socket.broadcast.emit('fluctuation_player', players);	// 他のプレイヤーへ通知
 				
-				
+				// ---- ゲーム開始処理 ----
 				if (isStartGame == NO)  {				// ゲームはまだ開始していないとき
 					io.to(socket.id).emit('disp_card_making', players, game, deckCards.length);	// 手札作成画面表示
 				}
@@ -142,10 +142,12 @@ io.sockets.on('connection', function(socket) {
 				}
 			}
 			else {
+				// IDを発行できない（最大ログイン人数オーバー）
 				io.to(socket.id).emit('disp_alert_message', E_ROOM_MAX);
 			}
 		}
 		else {
+			// 最大ログイン人数オーバー
 			io.to(socket.id).emit('disp_alert_message', E_ROOM_MAX);
 		}
 	});

@@ -1,29 +1,29 @@
 // ==== 定数 ====
-const MAX_USER = 7;					// 最大プレイヤー
+const MAX_USER = 7;					// 最大プレイヤー（server.jsと共通）
 
-// プレイヤーのステージ
+// ---- プレイヤーのステージ ----
 const AT_ENTRANCE    = 0;
 const AT_CARD_MAKING = 1;
 const AT_PLAYING     = 2;
 
-// 通常メッセージ
+// ---- 通常メッセージ ----（server.jsと共通）
 const MSG_Q_START_GAME  = 0;
 const MSG_Q_NEW_THEME   = 1;
 const MSG_Q_NEXT_TURN   = 2;
 const MSG_COMP_CHG_RULE = 3;
 const NORM_MSG = [
-	"ゲームを開始する？",									// MSG_Q_START_GAME
-	"新しいお題を出す？",									// MSG_Q_NEW_THEME
-	"場のカードを流して、次のターンへ？",					// MSG_Q_NEXT_TURN
-	"ルール変更完了！",										// MSG_COMP_CHG_RULE
+	"ゲームを開始する？",						// MSG_Q_START_GAME
+	"新しいお題を出す？",						// MSG_Q_NEW_THEME
+	"場のカードを流して、次のターンへ？",		// MSG_Q_NEXT_TURN
+	"ルール変更完了！",							// MSG_COMP_CHG_RULE
 ];
 
-// エラーメッセージ
-const E_ROOM_MAX       = 0;			// E-00
-const E_NO_USERNAME    = 1;			// E-01
-const E_BLANK_CARD     = 2;			// E-02
-const E_FULL_HANDLINGS = 3;			// E-03
-const E_EMPTY_DECK     = 4;			// E-04
+// ---- エラーメッセージ ----（server.jsと共通）
+const E_ROOM_MAX            = 0;	// E-00
+const E_NO_USERNAME         = 1;	// E-01
+const E_BLANK_CARD          = 2;	// E-02
+const E_FULL_HANDLINGS      = 3;	// E-03
+const E_EMPTY_DECK          = 4;	// E-04
 const E_CANT_CHG_RULE_HAND  = 5;	// E-05
 const E_CANT_CHG_RULE_FIELD = 6;	// E-06
 const ERR_MSG = [
@@ -143,8 +143,8 @@ socket.on('disp_game', function(game, num_of_deck, fieldCards, players)
 		document.getElementById('viewPlayersTable').style.display = 'block';
 		document.getElementById('viewRuleSetting').style.display = 'block';
 		
-		document.getElementById('idTitleImg').width  = '200';
-		document.getElementById('idTitleImg').height = '35';
+		// タイトルを小さくする
+		reduceTitle();
 	}
 	document.getElementById('viewTurn').style.display = 'block';
 	document.getElementById('viewInputTheme').style.display = 'block';
@@ -162,6 +162,12 @@ socket.on('disp_game', function(game, num_of_deck, fieldCards, players)
 	
 	updateHandlingCards();				// 手札再描画
 });
+
+// 手札再描画
+function updateHandlingCards()
+{
+	socket.emit('req_player_info');		// サーバへプレイヤー情報要求
+}
 
 // サーバからプレイヤー情報を受信
 socket.on('player_information', function(ruleHandlingCards, player)
@@ -185,12 +191,6 @@ socket.on('success_card_to_field', function(players)
 	updateHandlingCards();				// 手札再描画
 	updateFields();						// 場再描画
 });
-
-// 手札再描画
-function updateHandlingCards()
-{
-	socket.emit('req_player_info');		// サーバへプレイヤー情報要求
-}
 
 // 場再描画
 function updateFields()
@@ -266,18 +266,6 @@ socket.on('fluctuation_turn', function(next_turn)
 });
 
 // ---- 2.手札作成中 ----
-// サーバから山札の枚数変更通知を受信
-socket.on('fluctuation_deck', function(num_of_deck)
-{
-	if (myStage == AT_CARD_MAKING) {
-		let elem = document.getElementById('textCardsOfDeck');
-		elem.innerHTML = num_of_deck;
-	}
-	else if (myStage == AT_PLAYING) {
-		updateNumOfDeck(num_of_deck);				// 山札枚数更新
-	}
-});
-
 // クライアントが手札を山札へ追加ボタン押下
 function btnCardToDeck()
 {
@@ -288,9 +276,22 @@ function btnCardToDeck()
 		document.getElementById('inputCard').value = '';
 	}
 	else {
+		// 空の手札を山札へ追加しようとした
 		alert(ERR_MSG[E_BLANK_CARD]);
 	}
 }
+
+// サーバから山札の枚数変更通知を受信
+socket.on('fluctuation_deck', function(num_of_deck)
+{
+	if (myStage == AT_PLAYING) {
+		updateNumOfDeck(num_of_deck);				// 山札枚数更新
+	}
+	else {
+		let elem = document.getElementById('textCardsOfDeck');
+		elem.innerHTML = num_of_deck;
+	}
+});
 
 // クライアントがゲーム開始ボタン押下
 function btnGameStart()
@@ -315,28 +316,53 @@ function btnGameStart()
 }
 
 
-// ---- 1,入口 ----
+// ---- 1.入口 ----
+// クライアントがログインボタン押下
+function btnLogin()
+{
+	if (document.getElementById('textRoomPlayers').innerHTML < MAX_USER)
+	{
+		// ログイン数制限内
+		let elem = document.getElementById("inputPlayerName");
+		if (elem.value != "") {
+			// プレイヤー名入力あり
+			document.getElementById("idBtnLogin").disabled = true;	// ログインボタン無効化（2度押し回避）
+			socket.emit('req_login', elem.value);		// サーバへログイン申請
+		}
+		else {
+			// プレイヤー名入力なし
+			alert(ERR_MSG[E_NO_USERNAME]);
+		}
+	}
+	else {
+		// ログイン数制限オーバー
+		alert(ERR_MSG[E_ROOM_MAX]);
+	}
+}
+
 // サーバから手札作成画面表示指令を受信
 socket.on('disp_card_making', function(players, game, num_of_deck)
 {
 	if (myStage == AT_ENTRANCE) {
 		myStage = AT_CARD_MAKING;
+		
+		// 画面表示
 		document.getElementById('viewEntrance').style.display = 'none';
 		document.getElementById('viewCaution').style.display = 'none';
 		document.getElementById('viewListLog').style.display = 'none';
 		document.getElementById('viewPlayersTable').style.display = 'block';
 		document.getElementById('viewCardMaking').style.display = 'block';
 		document.getElementById('viewRuleSetting').style.display = 'block';
-		genPlayersTable(players);					// プレイヤーリスト更新
+		
+		// タイトルを小さくする
+		reduceTitle();
 		
 		// フォーム表示
+		genPlayersTable(players);					// プレイヤーリスト更新
 		document.getElementById("selectHandleCards").value = game.rule.handlingCards;
 		document.getElementById("selectFields").value = game.rule.fieldCards;
 		document.getElementById('textTurn').innerHTML = game.turn;
 		document.getElementById('textCardsOfDeck').innerHTML = num_of_deck;
-
-		document.getElementById('idTitleImg').width  = '200';
-		document.getElementById('idTitleImg').height = '35';
 	}
 });
 
@@ -348,13 +374,15 @@ socket.on('return_players', function(num_of_players)
 	elem.innerHTML = num_of_players;
 
 	if (myStage == AT_ENTRANCE) {
+		// ログインボタン有効化（サーバーから必要な情報を得たため）
 		if (document.getElementById("idBtnLogin").disabled == true) {
 			document.getElementById("idBtnLogin").disabled = false;
 		}
 	}
 });
 
-// [関数]プレイヤーテーブル作成
+// ---- サブ関数 ----
+// [サブ関数]プレイヤーテーブル作成
 function genPlayersTable(players)
 {
 	var elem = document.getElementById('tablePlayers');
@@ -411,26 +439,14 @@ function genPlayersTable(players)
 	elem.innerHTML = players.length;
 }
 
-// クライアントがログインボタン押下
-function btnLogin()
+// [サブ関数] タイトルを小さくする
+function reduceTitle()
 {
-	if (document.getElementById('textRoomPlayers').innerHTML < MAX_USER)
-	{
-		let elem = document.getElementById("inputPlayerName");
-		if (elem.value != "") {
-			document.getElementById("idBtnLogin").disabled = true;
-			socket.emit('req_login', elem.value);		// サーバへログイン申請
-		}
-		else {
-			alert(ERR_MSG[E_NO_USERNAME]);
-		}
-	}
-	else {
-		alert(ERR_MSG[E_ROOM_MAX]);
-	}
+	document.getElementById('idTitleImg').width  = '200';
+	document.getElementById('idTitleImg').height = '35';
 }
 
-// [関数] プレイヤー数確認
+// [サブ関数] プレイヤー数確認
 function checkPlayers()
 {
 	if (myStage == AT_ENTRANCE) {
@@ -438,25 +454,25 @@ function checkPlayers()
 	}
 }
 
-// [関数] フォームのルール（手札の数）を取得
+// [サブ関数] フォームのルール（手札の数）を取得
 function getFormSelHandCards()
 {
 	return document.getElementById("selectHandleCards").value;
 }
 
-// [関数] フォームのルール（場の札数）を取得
+// [サブ関数] フォームのルール（場の札数）を取得
 function getFormSelFieldCards()
 {
 	return document.getElementById("selectFields").value;
 }
 
-// [関数] 自分の手札の枚数を取得
+// [サブ関数] 自分の手札の枚数を取得
 function getMyHandCards()
 {
 	return myHandlingCards;
 }
 
-// [関数]過去ログテーブル作成
+// [サブ関数]過去ログテーブル作成
 function genLogTable(list_log)
 {
 	var elem = document.getElementById('tableLog');
@@ -500,7 +516,7 @@ function genLogTable(list_log)
 	elem.appendChild(tbl);
 }
 
-// [関数]過去ログの確認
+// [サブ関数]過去ログの確認
 function checkLog()
 {
 	if (myStage == AT_ENTRANCE) {
@@ -508,7 +524,7 @@ function checkLog()
 	}
 }
 
-// サーバから過去ログ確認申請の応答を受信
+// [サブ関数]サーバから過去ログ確認申請の応答を受信
 socket.on('return_logs', function(list_log)
 {
 	genLogTable(list_log);					// 過去ログテーブル生成
