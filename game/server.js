@@ -1,3 +1,8 @@
+//############################
+// Kami To Pen Online
+// Server Program Ver.0.0.1
+//############################
+
 // ==== 各種モジュール準備 ====
 var express = require('express');
 var http = require( 'http' );
